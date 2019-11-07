@@ -3,7 +3,7 @@ This program implements Tabu Search algorithm for a Travelling Salesman Problem.
 
 ## Gettin' started
 The Graph has a specified set of vertices |V| = min(100, inf), edges |E|, and edge's weights |W|.
-Algorithm has to visit each vertex and find path with the lowest cost S = SUM(foreach weights_on_path). 
+Algorithm has to visit each vertex and find path with the lowest cost S = sum(foreach weights_on_path). 
 Cost is calculated on the basis of "if current weight is greater than next weight, then add current weight * 10"; 
 
 
