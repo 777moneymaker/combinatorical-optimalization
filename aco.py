@@ -4,7 +4,7 @@ This is a simple implementation of Graphs in Python3.
 
 Requirements:
 :version = python3
-:modules = random, math
+:modules = random, math, numpy
 """
 __author__ = "Milosz Chodkowski PUT"
 __license__ = "MIT"
@@ -14,16 +14,17 @@ __email__ = "milosz.chodkowski@student.put.poznan.pl"
 __status__ = "Production"
 
 import random as rnd
-from numpy.random import choice as np_choice
-from numpy import unique, isnan
 from math import inf
+
+from numpy import isnan
+from numpy.random import choice as np_choice
+
 from graph import _Graph
 
 
 class ACO:
     def __init__(self, vertex: int, colony_size: int, iterations: int, a: float, b: float, pq: float, pi: float):
         self.graph = _Graph(vertex)
-        # self.graph.load()
         self.colony = colony_size
         self.iterations = iterations
         self.pheromone_impact = a
@@ -53,7 +54,7 @@ class ACO:
                     best_solution = ant.visited_vertices
                 ant._leave_pheromones()
             self._update_pheromones(ants)
-            print('generation {}, cost: {}, path: {}'.format(g+1, best_cost, len(best_solution)))
+            print('generation {}, cost: {}, path: {}'.format(g + 1, best_cost, len(best_solution)))
         return best_cost, best_solution
 
 
@@ -67,11 +68,11 @@ class Ant:
         self.allowed_moves = []
         self.left_pheromones = [[]]
         self.visited_vertices = [self.start]
-        self.tabu_moves = {}
+        self.tabu_moves = dict()
 
     def travel(self):
         self._generate_allowed_moves()
-        probabilities = [self._get_probability(self.current_vertex, j) for j in self.allowed_moves]
+        probabilities = list(map(self._get_probability, self.allowed_moves))
         self._validate_probabilities(probabilities)
         if not self.aco.first_iter:
             next_vertex = np_choice(self.allowed_moves, p=probabilities)
@@ -83,12 +84,10 @@ class Ant:
                     self.aco.graph.matrix[self.current_vertex][next_vertex]:
                 self.total_cost -= self.aco.graph.matrix[self.previous_vertex][self.current_vertex]
                 self.total_cost += self.aco.graph.matrix[self.previous_vertex][self.current_vertex] * 10
-        else:
-            pass
 
         self.visited_vertices.append(next_vertex)
         self.total_cost += self.aco.graph.matrix[self.current_vertex][next_vertex]
-        self.tabu_moves[self.current_vertex] = next_vertex
+        self.tabu_moves[next_vertex] = self.current_vertex
         self.previous_vertex = self.current_vertex
         self.current_vertex = next_vertex
 
@@ -99,28 +98,29 @@ class Ant:
         for i in range(len(probabilities)):
             if isnan(probabilities[i]):
                 probabilities[i] = lowest
-            probabilities[i] *= 10**self.aco.graph.rank
-        for i in range(len(probabilities)):
-            total += probabilities[i]
+            probabilities[i] *= 1.1 ** self.aco.graph.rank
+        total = sum(probabilities)
         for i in range(len(probabilities)):
             probabilities[i] /= total
 
-    def _get_probability(self, i: int, j: int):
-        denominator = 0.0
-        numerator = (self.aco.graph.pheromone_matrix[i][j] ** self.aco.pheromone_impact) * \
-                    ((1/self.aco.graph.matrix[i][j]) ** self.aco.distance_impact)
+    def _get_probability(self, j: int):
+        current, denominator = self.current_vertex, 0.0
+        numerator = (self.aco.graph.pheromone_matrix[current][j] ** self.aco.pheromone_impact) * \
+                    ((1 / self.aco.graph.matrix[current][j]) ** self.aco.distance_impact)
         for x in self.allowed_moves:
-            denominator += (self.aco.graph.pheromone_matrix[i][x] ** self.aco.pheromone_impact) * \
-                            ((1/self.aco.graph.matrix[i][x]) ** self.aco.distance_impact)
+            denominator += (self.aco.graph.pheromone_matrix[current][x] ** self.aco.pheromone_impact) * \
+                           ((1 / self.aco.graph.matrix[current][x]) ** self.aco.distance_impact)
         return numerator / denominator
 
     def _generate_allowed_moves(self):
-        if len(self.tabu_moves) > self.aco.graph.rank//2:
-            for i in range(len(self.tabu_moves)//2):
+        current = self.current_vertex
+        if len(self.visited_vertices) > (self.aco.graph.rank // 10) and \
+                len(self.tabu_moves) > len(self.visited_vertices) // 2:
+            for i in range(len(self.tabu_moves) // 2):
                 self.tabu_moves.popitem()
         allowed = []
         for j in range(self.aco.graph.rank):
-            if self.aco.graph.matrix[self.current_vertex][j] != inf and j not in self.tabu_moves.keys():
+            if self.aco.graph.matrix[current][j] != inf and j not in self.tabu_moves.keys():
                 allowed.append(j)
         self.allowed_moves = allowed
 
@@ -128,5 +128,5 @@ class Ant:
         left_pheromones = [[0] * self.aco.graph.rank] * self.aco.graph.rank
         for x in range(len(self.visited_vertices)):
             i, j = self.visited_vertices[x - 1], self.visited_vertices[x]
-            left_pheromones[i][j] = self.aco.pheromone_intensity / self.total_cost
+            left_pheromones[i][j] = self.aco.pheromone_intensity / self.total_cost ** 2
         self.left_pheromones = left_pheromones
