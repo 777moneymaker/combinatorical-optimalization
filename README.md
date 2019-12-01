@@ -1,5 +1,5 @@
-# combinatorical-optimalization
-This program implements Tabu Search algorithm for a Travelling Salesman Problem.
+# Combinatorical optimalization
+This program implements Ant Colony Optimization algorithm for a Travelling Salesman Problem.
 
 ## Gettin' started
 The Graph has a specified set of vertices |V| = min(100, inf), edges |E|, and edge's weights |W|.
