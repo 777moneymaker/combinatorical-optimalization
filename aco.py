@@ -6,12 +6,6 @@ Requirements:
 :version = python3
 :modules = random, math, numpy
 """
-__author__ = "Milosz Chodkowski PUT"
-__license__ = "MIT"
-__version__ = "0.1"
-__maintainer__ = "Milosz Chodkowski"
-__email__ = "milosz.chodkowski@student.put.poznan.pl"
-__status__ = "Production"
 
 import random as rnd
 from math import inf
@@ -45,7 +39,7 @@ class ACO:
         best_cost = inf
 
         for g in range(self.iterations):
-            ants = [Ant(self) for i in range(self.colony)]
+            ants = [Ant(self) for a in range(self.colony)]
             for ant in ants:
                 for i in range(self.graph.rank - 1):
                     ant.travel()

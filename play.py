@@ -1,11 +1,11 @@
 #!/usr/bin/python3
+"""
+This is a simple implementation of Graphs in Python3.
 
-__author__ = "Milosz Chodkowski PUT"
-__license__ = "MIT"
-__version__ = "0.1"
-__maintainer__ = "Milosz Chodkowski"
-__email__ = "milosz.chodkowski@student.put.poznan.pl"
-__status__ = "Production"
+Requirements:
+:version = python3
+:modules = random, math, numpy
+"""
 
 from aco import ACO
 
