@@ -13,30 +13,49 @@ __maintainer__ = "Milosz Chodkowski"
 __email__ = "milosz.chodkowski@student.put.poznan.pl"
 __status__ = "Production"
 
-import random
+import random as rnd
+import numpy as np
 from math import inf
 
 
-class Graph:
-    def __init__(self, vertex=10):
-        self.vertex = vertex
-        # if cell is equal to zero, that means the vertices i, j are not connected
-        self.matrix = [[inf for i in range(vertex)] for j in range(vertex)]
-        self.pheromone_matrix = [[1/vertex**2 for i in range(vertex)] for j in range(vertex)]
-        self._reduce_edges()
+class _Graph:
+    def __init__(self, rank=10):
+        self.rank = rank
+        self.matrix = np.zeros((rank, rank))
+        self.pheromone_matrix = np.zeros((self.rank, self.rank))
+        self._generate_edges()
+        self._generate_pheromones()
 
-    def _reduce_edges(self):
-        for i in range(self.vertex):
-            vertices = [random.randint(0, self.vertex - 1) for i in range(6)]
-            for j in range(6):
-                c, val = random.choice(vertices), random.randint(1, 100)
-                self.matrix[i][c] = val
-                self.matrix[c][i] = val
-                vertices.remove(c)
-        for i in range(self.vertex):
-            for j in range(self.vertex):
+    def _generate_edges(self):
+        for i in range(self.rank):
+            for j in range(self.rank):
+                self.matrix[i][j] = rnd.randint(1, 100)
+        for i in range(self.rank // 4):
+            self.matrix[i][rnd.randint(1, self.rank - 1)] = inf
+        for i in range(self.rank):
+            for j in range(self.rank):
                 if self.matrix[i][j] == inf:
-                    self.pheromone_matrix[i][j] = -inf
+                    self.matrix[j][i] = inf
+        for i in range(self.rank):
+            self.matrix[i][i] = inf
+
+    def _generate_pheromones(self):
+        for i in range(self.rank):
+            for j in range(self.rank):
+                self.pheromone_matrix[i][j] = 1/(self.rank/2)**2
+        for i in range(self.rank):
+            for j in range(self.rank):
+                self.pheromone_matrix[j][i] = self.pheromone_matrix[i][j]
+        for i in range(self.rank):
+            self.pheromone_matrix[i][i] = -inf
+
+    def generate_to_file(self):
+        np.savetxt('demo.txt', self.matrix, fmt='%f')
+
+    def load(self):
+        self.matrix = np.loadtxt('demo.txt', dtype=float)
+        self.rank = len(self.matrix)
+        print(self.rank)
 
     def show(self):
         for line in self.matrix:

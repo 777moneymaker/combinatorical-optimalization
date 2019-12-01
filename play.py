@@ -7,14 +7,16 @@ __maintainer__ = "Milosz Chodkowski"
 __email__ = "milosz.chodkowski@student.put.poznan.pl"
 __status__ = "Production"
 
-from aco import ACO
-from graph import Graph
+
+from graph import _Graph
 from numpy import unique
+from aco import ACO
 
 
 if __name__ == "__main__":
-    G = Graph(vertex=100)
-    G.show()
-    A = ACO(graph=G, colony_size=15, a=1.0, b=10.0, iterations=100, pq=0.5, pi=10)
-    best_cost, best_solution = A.solve()
-    print(best_cost, best_solution)
+    sols = []
+    mins = []
+    i = 0
+    A = ACO(vertex=100, colony_size=7, iterations=100, a=2.1, b=1.1, pq=0.35, pi=25)
+    best_c, best_s = A.solve()
+    print('cost:{}, solution:{}'.format(best_c, best_s))
