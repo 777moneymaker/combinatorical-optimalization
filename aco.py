@@ -110,14 +110,14 @@ class Ant:
 
     def _generate_allowed_moves(self):
         current = self.current_vertex
-        if len(self.visited_vertices) > (self.aco.graph.rank // 10) and \
-                len(self.tabu_moves) > len(self.visited_vertices) // 2:
+        if (len(self.visited_vertices) > (self.aco.graph.rank // 10) 
+            and len(self.tabu_moves) > len(self.visited_vertices) // 2):
             for i in range(len(self.tabu_moves) // 2):
                 self.tabu_moves.popitem()
         allowed = []
         for j in range(self.aco.graph.rank):
-            if self.aco.graph.matrix[current][j] != inf and \
-                j not in self.tabu_moves.keys():
+            if (self.aco.graph.matrix[current][j] != inf 
+                and j not in self.tabu_moves.keys()):
                 allowed.append(j)
         self.allowed_moves = allowed
 
