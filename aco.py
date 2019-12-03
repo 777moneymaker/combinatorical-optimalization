@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Simple implementation of Graphs in Python3.
+"""Aco and Ant class implementation
 
 Requirements:
 :version = python3
