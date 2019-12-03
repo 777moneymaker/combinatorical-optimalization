@@ -1,5 +1,5 @@
 # Combinatorical optimalization
-This program implements Ant Colony Optimization algorithm for a Travelling Salesman Problem.
+This program implements Ant Colony Optimization algorithm for a Graph Travelling Problem. 
 
 ## Gettin' started
 The Graph has a specified set of vertices |V| = min(100, inf), edges |E|, and edge's weights |W|.
