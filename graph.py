@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-"""
-This is a simple implementation of Graphs in Python3.
+"""Simple implementation of Graphs in Python3.
 
 Requirements:
 :version = python3

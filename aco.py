@@ -1,6 +1,5 @@
 #!/usr/bin/python3
-"""
-This is a simple implementation of Graphs in Python3.
+"""Simple implementation of Graphs in Python3.
 
 Requirements:
 :version = python3
@@ -30,7 +29,8 @@ class ACO:
     def _update_pheromones(self, ants: list):
         for i in range(len(self.graph.pheromone_matrix)):
             for j in range(len(self.graph.pheromone_matrix)):
-                self.graph.pheromone_matrix[i][j] *= (1 - self.pheromone_vaporize_coefficient)
+                self.graph.pheromone_matrix[i][j] *= (
+                    1 - self.pheromone_vaporize_coefficient)
                 for ant in ants:
                     self.graph.pheromone_matrix[i][j] += ant.left_pheromones[i][j]
 
@@ -48,7 +48,8 @@ class ACO:
                     best_solution = ant.visited_vertices
                 ant._leave_pheromones()
             self._update_pheromones(ants)
-            print('generation {}, cost: {}, path: {}'.format(g + 1, best_cost, len(best_solution)))
+            print('generation {}, cost: {}, path: {}'.format(
+                g + 1, best_cost, len(best_solution)))
         return best_cost, best_solution
 
 
@@ -67,7 +68,7 @@ class Ant:
     def travel(self):
         self._generate_allowed_moves()
         probabilities = list(map(self._get_probability, self.allowed_moves))
-        self._validate_probabilities(probabilities)
+        # self._validate_probabilities(probabilities)
         if not self.aco.first_iter:
             next_vertex = np_choice(self.allowed_moves, p=probabilities)
         else:
@@ -85,25 +86,27 @@ class Ant:
         self.previous_vertex = self.current_vertex
         self.current_vertex = next_vertex
 
-    def _validate_probabilities(self, probabilities: list):
-        # lowest value that python3 can handle
-        lowest = 2.2250738585072014e-308
-        total = 0
-        for i in range(len(probabilities)):
-            if isnan(probabilities[i]):
-                probabilities[i] = lowest
-            probabilities[i] *= 1.1 ** self.aco.graph.rank
-        total = sum(probabilities)
-        for i in range(len(probabilities)):
-            probabilities[i] /= total
+    # def _validate_probabilities(self, probabilities: list):
+    #     # lowest value that python3 can handle
+    #     lowest = 2.2250738585072014e-308
+    #     total = 0
+    #     for i in range(len(probabilities)):
+    #         if isnan(probabilities[i]):
+    #             probabilities[i] = lowest
+    #         probabilities[i] *= 1.1 ** self.aco.graph.rank
+    #     total = sum(probabilities)
+    #     for i in range(len(probabilities)):
+    #         probabilities[i] /= total
 
     def _get_probability(self, j: int):
         current, denominator = self.current_vertex, 0.0
         numerator = (self.aco.graph.pheromone_matrix[current][j] ** self.aco.pheromone_impact) * \
-                    ((1 / self.aco.graph.matrix[current][j]) ** self.aco.distance_impact)
+                    ((1 / self.aco.graph.matrix[current]
+                      [j]) ** self.aco.distance_impact)
         for x in self.allowed_moves:
             denominator += (self.aco.graph.pheromone_matrix[current][x] ** self.aco.pheromone_impact) * \
-                           ((1 / self.aco.graph.matrix[current][x]) ** self.aco.distance_impact)
+                           ((1 / self.aco.graph.matrix[current]
+                             [x]) ** self.aco.distance_impact)
         return numerator / denominator
 
     def _generate_allowed_moves(self):
@@ -122,5 +125,6 @@ class Ant:
         left_pheromones = [[0] * self.aco.graph.rank] * self.aco.graph.rank
         for x in range(len(self.visited_vertices)):
             i, j = self.visited_vertices[x - 1], self.visited_vertices[x]
-            left_pheromones[i][j] = self.aco.pheromone_intensity / self.total_cost ** 2
+            left_pheromones[i][j] = self.aco.pheromone_intensity / \
+                self.total_cost ** 2
         self.left_pheromones = left_pheromones
