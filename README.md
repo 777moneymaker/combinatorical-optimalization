@@ -17,6 +17,11 @@ sudo chmod +x play.py
 ./play.py  
 ```
 
+TODO's
+-----
+* Reduce complexity
+* In traverse include all vertices
+
 Authors
 -----
 **Miłosz Chodkowski_PUT Poznan** [777moneymaker](https://github.com/777moneymaker)
