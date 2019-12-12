@@ -16,7 +16,7 @@ from aco import ACO
 
 
 def main():
-    print('Start optimiation...')
+    print('Start optimization...')
     aco = ACO(vertex=45, colony_size=11, iterations=70, a=2.8, b=1.7, pq=0.5, pi=190.0)
     best_c, best_s, time = aco.optimize()
 
