@@ -9,7 +9,7 @@ Requirements:
 
 __author__ = 'Milosz Chodkowski PUT'
 __license__ = 'MIT'
-__version__ = '0.5'
+__version__ = '0.9'
 __status__ = 'Testing'
 
 import random as rnd
@@ -79,8 +79,7 @@ class ACO:
                 for b in best_ants:
                     b._leave_pheromones()
                 self._update_pheromones(best_ants)
-                print('\nFound Solution:\ngeneration {}, cost: {}, path: {}\n'.format(gen_count, best_cost,
-                                                                                      len(best_solution)))
+                print('Found Solution:\n cost: {}, path: {}\n'.format(best_cost, len(best_solution)))
                 o_file = open('TestsData/data4.txt', 'a')
                 o_file.write('generation: ' + str(gen_count) + ' cost: ' + str(best_cost) + ' solution ' + ' '.join(
                     str(v) for v in best_solution) + '\n')
@@ -173,8 +172,10 @@ class Ant:
 
         allowed = generate(self)
         # If not any legal move, then pop half of tabu moves and generate again.
-        if not allowed:
+        while not allowed:
             for x in range(len(self.tabu_moves) // 2):
+                if len(self.tabu_moves) < 2:
+                    break
                 self.tabu_moves.pop()
             allowed = generate(self)
 

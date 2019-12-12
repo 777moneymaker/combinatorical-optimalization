@@ -9,7 +9,7 @@ Requirements:
 
 __author__ = 'Milosz Chodkowski PUT'
 __license__ = 'MIT'
-__version__ = '0.5'
+__version__ = '0.9'
 __status__ = 'Testing'
 
 import random as rnd
