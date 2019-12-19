@@ -93,7 +93,7 @@ class ACO:
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
             for ant in ants:
                 # Every ant travels |V| - 1. First vertex is given at the start.
-                for i in range(self.graph.rank - 1):
+                while len(unique(ant.visited_vertices)) < self.graph.rank:
                     ant.travel()
                 # If any of the ants found best solution - set it.
                 if ant.total_cost < best_cost and len(unique(ant.visited_vertices)) >= self.graph.rank:
