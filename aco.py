@@ -184,8 +184,6 @@ class Ant:
         Args:
             probabilities (list): list of probabilities to validate.
         """
-        if float('nan') not in probabilities:
-            return
         # Lowest value that python3 can handle
         lowest = 2.2250738585072014e-308
         was_nan_found = False
@@ -194,7 +192,6 @@ class Ant:
             if np.isnan(probabilities[i]):
                 probabilities[i] = lowest
                 was_nan_found = True
-
             # Make every probability proportionally bigger.
             if was_nan_found:
                 probabilities[i] *= 1.1 ** self.aco.graph.rank
