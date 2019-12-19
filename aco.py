@@ -53,7 +53,7 @@ class ACO:
     def _update_pheromones(self, ants: list) -> None:
         """Method updating pheromones on visited edges.
         
-        Travers through every visited edge and applies pheromone on it.
+        Traverse through every visited edge and applies pheromone on it.
 
         Args:
             param (list): List of ants which found valid solution.
