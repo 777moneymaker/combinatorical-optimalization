@@ -33,13 +33,13 @@ class ACO:
         Creates ACO object containing Graph, Ants and methods handling optimization process.
 
         Args:
-            param1 (int): Number of vertices.
-            param2 (int): Size of colony / number of ants.
-            param3 (int): Number of iterations.
-            param4 (float): Pheromone impact.
-            param5 (float): Distance impact.
-            param6 (float): Pheromone vaporize coefficient.
-            param7 (float): Pheromone intensity.
+            vertex (int): Number of vertices.
+            colony_size (int): Size of colony / number of ants.
+            iterations (int): Number of iterations.
+            alpha (float): Pheromone impact.
+            beta (float): Distance impact.
+            pq (float): Pheromone vaporize coefficient.
+            pi (float): Pheromone intensity.
         """
         self.graph = Graph(vertex)
         self.colony = colony_size
@@ -56,7 +56,7 @@ class ACO:
         Traverse through every visited edge and applies pheromone on it.
 
         Args:
-            param (list): List of ants which found valid solution.
+            ants (list): List of ants which found valid solution.
 
         Returns:
             None.
@@ -87,7 +87,7 @@ class ACO:
             # If past 30 minutes.
             if elapsed_time > 60 * 30 :
                 print('Time is over!')
-                return best_cost, best_solution
+                return best_cost, best_solution, elapsed_time
 
             # Make a new list of ants and best_ants which found solution.
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
@@ -128,7 +128,7 @@ class Ant:
         Creates Ant object containing reference to ACO class and methods handling ant choice process.
         
         Args:
-            param (ACO): Reference to ACO class in which Ants will be created.
+            a (ACO): Reference to ACO class in which Ants will be created.
         """
         self.aco = a
         self.total_cost = 0.0
@@ -186,7 +186,7 @@ class Ant:
         If not, then make it sum to one.
 
         Args:
-            param (list): list of probabilities to validate.
+            probabilities (list): list of probabilities to validate.
         """
         # Lowest value that python3 can handle
         lowest = 2.2250738585072014e-308
@@ -204,8 +204,12 @@ class Ant:
 
     def _get_probability(self, j: int) -> float:
         """Get probability for edge (current, param).
+
         Args:
-            param (int): Vertex for which we compute probability.
+            j (int): Vertex for which we compute probability.
+
+        Returns:
+            float: Probability of picking the j vertex as next.
         """
         current, denominator = self.current_vertex, 0.0
         
@@ -228,7 +232,7 @@ class Ant:
             """Nested method for generating initial lost of allowed moves.
             
             Args:
-                param (Ant): Reference to Ant on which generate() is called.
+                ant (Ant): Reference to Ant on which generate() is called.
             """
             matrix, rank = self.aco.graph.matrix, self.aco.graph.rank
             curr_v, prev_v = ant.current_vertex, ant.previous_vertex
