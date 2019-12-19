@@ -16,11 +16,11 @@ __license__ = 'MIT'
 __version__ = '0.9'
 __status__ = 'Testing'
 
-import sys
 import random as rnd
 import numpy as np
 from math import inf
-from typing import List, Tuple, Dict
+from typing import List, Dict
+
 
 class Graph:
     def __init__(self, rank: int = 10):

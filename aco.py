@@ -19,9 +19,9 @@ __status__ = 'Testing'
 import timeit
 import random as rnd
 from math import inf
-from numpy import isnan, zeros, unique
+from numpy import zeros, isnan, zeros, unique
 from numpy.random import choice as np_choice
-from typing import Tuple, List
+from typing import Tuple
 
 from graph import Graph
 
@@ -64,10 +64,10 @@ class ACO:
         for i in range(self.graph.rank):
             for j in range(self.graph.rank):
                 # Evaporate on every edge.
-                self.graph.pheromone_matrix[i][j] *= (1 - self.pheromone_vaporize_coefficient)
+                self.graph.pheromone_matrix[i, j] *= (1 - self.pheromone_vaporize_coefficient)
                 # Ant apply pheromones.
                 for ant in ants:
-                   self.graph.pheromone_matrix[i][j] += ant.left_pheromones[i][j]
+                    self.graph.pheromone_matrix[i, j] += ant.left_pheromones[i, j]
 
     def optimize(self) -> Tuple[float, list, float]:
         """Main method optimizing solution.
@@ -140,7 +140,7 @@ class Ant:
         self.allowed_moves = list()
         self.tabu_moves = list()
 
-        self.left_pheromones = [[]]
+        self.left_pheromones = zeros((self.aco.graph.rank, self.aco.graph.rank))
         self.visited_vertices = [self.start]
 
     def travel(self) -> None:
@@ -163,10 +163,10 @@ class Ant:
         '''Add next edge value to total cost. If previous value was bigger,
            then subtract the previous value, and add it 10 times bigger.'''
         if self.previous_vertex is not None:
-            if self.aco.graph.matrix[self.previous_vertex][self.current_vertex] > \
-                    self.aco.graph.matrix[self.current_vertex][next_vertex]:
-                self.total_cost -= self.aco.graph.matrix[self.previous_vertex][self.current_vertex]
-                self.total_cost += self.aco.graph.matrix[self.previous_vertex][self.current_vertex] * 10
+            if self.aco.graph.matrix[self.previous_vertex, self.current_vertex] > \
+                    self.aco.graph.matrix[self.current_vertex, next_vertex]:
+                self.total_cost -= self.aco.graph.matrix[self.previous_vertex, self.current_vertex]
+                self.total_cost += self.aco.graph.matrix[self.previous_vertex, self.current_vertex] * 10
 
         self.total_cost += self.aco.graph.matrix[self.current_vertex][next_vertex]
         
@@ -214,11 +214,11 @@ class Ant:
         current, denominator = self.current_vertex, 0.0
         
         # Set the numerator and denominator for current iteration.
-        numerator = (self.aco.graph.pheromone_matrix[current][j] ** self.aco.pheromone_impact) * \
-                    ((1 / self.aco.graph.matrix[current][j]) ** self.aco.distance_impact)
+        numerator = (self.aco.graph.pheromone_matrix[current, j] ** self.aco.pheromone_impact) * \
+                    ((1 / self.aco.graph.matrix[current, j]) ** self.aco.distance_impact)
         for x in self.allowed_moves:
-            denominator += (self.aco.graph.pheromone_matrix[current][x] ** self.aco.pheromone_impact) * \
-                           ((1 / self.aco.graph.matrix[current][x]) ** self.aco.distance_impact)
+            denominator += (self.aco.graph.pheromone_matrix[current, x] ** self.aco.pheromone_impact) * \
+                           ((1 / self.aco.graph.matrix[current, x]) ** self.aco.distance_impact)
 
         return numerator / denominator
 
@@ -239,7 +239,7 @@ class Ant:
             tabu_moves, al_moves = ant.tabu_moves, list()
             # Initially append all visited vertices.
             for j in range(rank):
-                if matrix[curr_v][j] != inf and j not in tabu_moves:
+                if matrix[curr_v, j] != inf and j not in tabu_moves:
                     al_moves.append(j)
             # Previous vertex not valid.
             if prev_v in al_moves and len(al_moves) > 1:
@@ -270,7 +270,7 @@ class Ant:
             for x in range(1, len(self.visited_vertices)):
                 i, j = self.visited_vertices[x - 1], self.visited_vertices[x]
                 # Leave pheromones on edge i, j and j, i.
-                left_pheromones[i][j] = self.aco.pheromone_intensity / self.total_cost ** 2
-                left_pheromones[j][i] = self.aco.pheromone_intensity / self.total_cost ** 2
+                left_pheromones[i, j] = self.aco.pheromone_intensity / self.total_cost ** 2
+                left_pheromones[j, i] = self.aco.pheromone_intensity / self.total_cost ** 2
         
         self.left_pheromones = left_pheromones
