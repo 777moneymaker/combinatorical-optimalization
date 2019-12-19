@@ -7,7 +7,7 @@ Requires:
     version: python3.7
     packages: random, math, numpy, typing, timeit
 
-TODO's
+TODO's:
     * Test if while loop will work better than for loop (in optimize method).
 """
 

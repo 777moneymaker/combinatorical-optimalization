@@ -6,7 +6,8 @@ Module contains methods for creation and handling Graph objects.
 Requires:
     version: python3.7
     packages: random, math, numpy
-TODO'S:
+
+TODO's:
     * Simplify code.
     * Check if graph is connected.
 """
