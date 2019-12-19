@@ -52,25 +52,18 @@ class ACO:
         self.pheromone_intensity = pi
         self.first_iter = True
 
-    def _update_pheromones(self, ants: list) -> None:
+    def _update_pheromones(self, ants: list):
         """Method updating pheromones on visited edges.
         
         Traverse through every visited edge and applies pheromone on it.
 
         Args:
             ants (list): List of ants which found valid solution.
-
-        Returns:
-            None.
         """
-        for i in range(self.graph.rank):
-            for j in range(self.graph.rank):
-                # Evaporate on every edge.
-                self.graph.pheromone_matrix[i, j] *= (1 - self.pheromone_vaporize_coefficient)
-                # Ant apply pheromones.
-                for ant in ants:
-                    self.graph.pheromone_matrix[i, j] += ant.left_pheromones[i, j]
-
+        for ant in ants:
+            self.graph.pheromone_matrix = np.add(self.graph.pheromone_matrix, ant.left_pheromones)
+        self.graph.pheromone_matrix *= (1 - self.pheromone_vaporize_coefficient)
+        
     def optimize(self) -> Tuple[float, list, float]:
         """Main method optimizing solution.
         
@@ -94,11 +87,11 @@ class ACO:
             # Make a new list of ants and best_ants which found solution.
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
             for ant in ants:
-                # Every ant travels |V| - 1. First vertex is given at the start.
+                # Travel until you find a solution.
                 while len(np.unique(ant.visited_vertices)) < self.graph.rank:
                     ant.travel()
                 # If any of the ants found best solution - set it.
-                if ant.total_cost < best_cost and len(np.unique(ant.visited_vertices)) >= self.graph.rank:
+                if ant.total_cost < best_cost:
                     best_cost, best_solution = ant.total_cost, ant.visited_vertices
                     was_changed = True
                     # Add ant which found a solution to list of best_ants.
@@ -109,10 +102,11 @@ class ACO:
             print('ended gen no {}, curr elapsed time: {}'.format(gen_count, elapsed_time))
 
             # If any ant got solution, then update all pheromones and each best applies pheromone.
+            for ant in best_ants:
+                ant._leave_pheromones()
+            self._update_pheromones(best_ants)
+            # Print results to file.
             if was_changed:
-                for b in best_ants:
-                    b._leave_pheromones()
-                self._update_pheromones(best_ants)
                 print('Found Solution:\n cost: {}, path: {}\n'.format(best_cost, len(best_solution)))
                 o_file = open('TestsData/data5.txt', 'a')
                 o_file.write('generation: ' + str(gen_count) + ' cost: ' + str(best_cost) + ' solution ' + ' '.join(
@@ -145,7 +139,7 @@ class Ant:
         self.left_pheromones = np.zeros((self.aco.graph.rank, self.aco.graph.rank))
         self.visited_vertices = [self.start]
 
-    def travel(self) -> None:
+    def travel(self):
         """Makes ant travel to next vertex.
 
         Generates allowed moves and their probabilities. Makes choice.
@@ -182,7 +176,7 @@ class Ant:
         self.previous_vertex = self.current_vertex
         self.current_vertex = next_vertex
 
-    def _validate_probabilities(self, probabilities: list) -> None:
+    def _validate_probabilities(self, probabilities: list):
         """Checks if probabilities sum to one.
 
         If not, then make it sum to one.
@@ -190,6 +184,8 @@ class Ant:
         Args:
             probabilities (list): list of probabilities to validate.
         """
+        if float('nan') not in probabilities:
+            return
         # Lowest value that python3 can handle
         lowest = 2.2250738585072014e-308
         was_nan_found = False
@@ -215,7 +211,7 @@ class Ant:
             j (int): Vertex for which we compute probability.
 
         Returns:
-            float: Probability of picking the j vertex as next.
+            (float): Probability of picking the j vertex as next.
         """
         current, denominator = self.current_vertex, 0.0
         
@@ -228,7 +224,7 @@ class Ant:
 
         return numerator / denominator
 
-    def _generate_allowed_moves(self) -> None:
+    def _generate_allowed_moves(self):
         """Generate moves that are valid.
 
         Method checks which edges are not visited.
@@ -239,6 +235,9 @@ class Ant:
             
             Args:
                 ant (Ant): Reference to Ant on which generate() is called.
+
+            Returns:
+                (list): List of allowed moves.
             """
             matrix, rank = self.aco.graph.matrix, self.aco.graph.rank
             curr_v, prev_v = ant.current_vertex, ant.previous_vertex
@@ -264,14 +263,14 @@ class Ant:
 
         self.allowed_moves = allowed
 
-    def _leave_pheromones(self) -> None:
+    def _leave_pheromones(self):
         """Apply pheromones on visited edges.
 
         Traverse whole solution (path) and applies pheromone on every edge.
         """
-        v = self.aco.graph.rank
+        rank = self.aco.graph.rank
         # Make left pheromones on all edges equal to zero.
-        left_pheromones = np.zeros((v, v))
+        left_pheromones = np.zeros((rank, rank))
         if len(self.visited_vertices) > 1:
             for x in range(1, len(self.visited_vertices)):
                 i, j = self.visited_vertices[x - 1], self.visited_vertices[x]

@@ -42,7 +42,7 @@ class Graph:
         self._remove_random_edges()
         self._check_if_connected()
 
-    def _remove_random_edges(self) -> None:
+    def _remove_random_edges(self):
         """Sets random correspoding cells to inf.
         
         Sets [i, j] and [j, i] to inf.
@@ -56,16 +56,16 @@ class Graph:
             self.matrix[x, y] = inf
             self.matrix[y, x] = inf
 
-    def generate_to_file(self) -> None:
+    def generate_to_file(self):
         """Saves matrix to specific txt file."""
         np.savetxt('TestsData/v40.txt', self.matrix, fmt='%f')
 
-    def load(self) -> None:
+    def load(self):
         """Loads matrix from specific txt file."""
         self.matrix = np.loadtxt('TestsData/v40.txt', dtype=float)
         self.rank = len(self.matrix)
 
-    def show(self) -> None:
+    def show(self):
         """Prints matrix and pheromone matrix."""
         np.set_printoptions(threshold=np.inf)
         print(self.matrix)
@@ -76,6 +76,9 @@ class Graph:
         """Checks if graph is connected Graph.
 
         Makes a DFS traverse. If len DFS == rank then graph is connected.
+
+        Raises:
+                ValueError: If Graph is not connected.
         """
         AdjList = Dict[int, List[int]]
         def matrix_to_list() -> AdjList:
@@ -84,9 +87,9 @@ class Graph:
             Returns:
                 AdjList: List of successors for each vertex.
             """
-            graph = {}
+            graph = dict()
             for i in range(self.rank):
-                nodes = []
+                nodes = list()
                 for j in range(self.rank):
                     if self.matrix[i, j] != inf:
                         if j not in nodes:
@@ -94,7 +97,7 @@ class Graph:
                 graph[i] = nodes
             return graph
 
-        def dfs(visited: list, graph: AdjList, node: int) -> None:
+        def dfs(visited: list, graph: AdjList, node: int):
             """DFS algorithm for traversing."""
             if node not in visited:
                 visited.append(node)
@@ -102,7 +105,7 @@ class Graph:
                     dfs(visited, graph, neighbour)
 
         adj_list = matrix_to_list()
-        visited = []
+        visited = list()
         dfs(visited, adj_list, 0)
         if len(visited) != self.rank:
             raise ValueError('Graph not connected!');
