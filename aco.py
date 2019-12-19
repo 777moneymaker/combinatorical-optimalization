@@ -4,7 +4,7 @@
 Contains methods for handling object of type(Graph) and type(Ant).
 
 Requires:
-    version: python3.8
+    version: python3.7
     packages: random, math, numpy, typing, timeit
 
 TODO's

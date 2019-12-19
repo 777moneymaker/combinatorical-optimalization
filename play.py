@@ -2,6 +2,7 @@
 """ACO optimization main file.
 
 Requires:
+	version: python3.7
 	modules: aco.py
 """
 
