@@ -9,7 +9,6 @@ Requires:
 
 TODO's:
     * Simplify code.
-    * Check if graph is connected.
 """
 
 __author__ = 'Milosz Chodkowski PUT'

@@ -8,7 +8,7 @@ Requires:
     packages: random, math, numpy, typing, timeit
 
 TODO's:
-    * Test if while loop will work better than for loop (in optimize method).
+    * Test if while loop will work better than for loop (in 'optimize' method).
 """
 
 __author__ = 'Milosz Chodkowski PUT'
