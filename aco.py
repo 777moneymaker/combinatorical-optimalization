@@ -18,8 +18,10 @@ __status__ = 'Testing'
 
 import timeit
 import random as rnd
+
+import numpy as np
+
 from math import inf
-from numpy import zeros, isnan, zeros, unique
 from numpy.random import choice as np_choice
 from typing import Tuple
 
@@ -93,10 +95,10 @@ class ACO:
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
             for ant in ants:
                 # Every ant travels |V| - 1. First vertex is given at the start.
-                while len(unique(ant.visited_vertices)) < self.graph.rank:
+                while len(np.unique(ant.visited_vertices)) < self.graph.rank:
                     ant.travel()
                 # If any of the ants found best solution - set it.
-                if ant.total_cost < best_cost and len(unique(ant.visited_vertices)) >= self.graph.rank:
+                if ant.total_cost < best_cost and len(np.unique(ant.visited_vertices)) >= self.graph.rank:
                     best_cost, best_solution = ant.total_cost, ant.visited_vertices
                     was_changed = True
                     # Add ant which found a solution to list of best_ants.
@@ -140,7 +142,7 @@ class Ant:
         self.allowed_moves = list()
         self.tabu_moves = list()
 
-        self.left_pheromones = zeros((self.aco.graph.rank, self.aco.graph.rank))
+        self.left_pheromones = np.zeros((self.aco.graph.rank, self.aco.graph.rank))
         self.visited_vertices = [self.start]
 
     def travel(self) -> None:
@@ -168,7 +170,7 @@ class Ant:
                 self.total_cost -= self.aco.graph.matrix[self.previous_vertex, self.current_vertex]
                 self.total_cost += self.aco.graph.matrix[self.previous_vertex, self.current_vertex] * 10
 
-        self.total_cost += self.aco.graph.matrix[self.current_vertex][next_vertex]
+        self.total_cost += self.aco.graph.matrix[self.current_vertex, next_vertex]
         
         # On next move ant can't go to previous and current.
         if self.previous_vertex is not None:
@@ -190,12 +192,16 @@ class Ant:
         """
         # Lowest value that python3 can handle
         lowest = 2.2250738585072014e-308
+        was_nan_found = False
         for i in range(len(probabilities)):
             # If value is NaN, then make it the lowest value.
-            if isnan(probabilities[i]):
+            if np.isnan(probabilities[i]):
                 probabilities[i] = lowest
+                was_nan_found = True
+
             # Make every probability proportionally bigger.
-            probabilities[i] *= 1.1 ** self.aco.graph.rank
+            if was_nan_found:
+                probabilities[i] *= 1.1 ** self.aco.graph.rank
         total = sum(probabilities)
 
         # To make probabilities sum to 1, divide every probability by their sum.
@@ -265,7 +271,7 @@ class Ant:
         """
         v = self.aco.graph.rank
         # Make left pheromones on all edges equal to zero.
-        left_pheromones = zeros((v, v))
+        left_pheromones = np.zeros((v, v))
         if len(self.visited_vertices) > 1:
             for x in range(1, len(self.visited_vertices)):
                 i, j = self.visited_vertices[x - 1], self.visited_vertices[x]

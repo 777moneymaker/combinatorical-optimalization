@@ -29,58 +29,32 @@ class Graph:
         Generates random matrix and pheromone_matrix based on number of vertices.
         
         Args:
-            rank(int): Number of vertices.
+            rank (int): Number of vertices.
         """
         self.rank = rank
-        self.matrix = np.zeros((rank, rank))
-        self.load()
-        self.pheromone_matrix = np.zeros((self.rank, self.rank))
-        self._generate_edges()
-        self._generate_pheromones()
+        # Init with random values.
+        self.matrix = np.random.uniform(1.0, 100.0, (self.rank, self.rank))
+        np.fill_diagonal(self.matrix, inf)
+        # Set the same value in every cell.
+        self.pheromone_matrix = np.full((self.rank, self.rank), 1 / (self.rank / 2) ** 2, dtype='float64')
+        np.fill_diagonal(self.pheromone_matrix, -inf)
+
+        self._remove_random_edges()
         self._check_if_connected()
 
-    def _generate_edges(self) -> None:
-        """Fills every matrix cell.
+    def _remove_random_edges(self) -> None:
+        """Sets random correspoding cells to inf.
         
-        Matrix contains only numbers between [1, 100].
-        Inf means there is no edge.
+        Sets [i, j] and [j, i] to inf.
         
         Note:
             Diagonal is inf.
         """
-        # Set random values to all edges.
-        for i in range(self.rank):
-            for j in range(self.rank):
-                val = rnd.randint(1, 100)
-                self.matrix[i, j] = val
-                self.matrix[j, i] = val
-
-        # Make rank edges an inf.
+        # Make rand edges an inf.
         for i in range(self.rank * 10):
             x, y = rnd.randint(0, self.rank - 1), rnd.randint(0, self.rank - 1)
             self.matrix[x, y] = inf
             self.matrix[y, x] = inf
-        # Set inf's on diagonal.
-        np.fill_diagonal(self.matrix, inf)
-        # Print
-        # np.set_printoptions(threshold=sys.maxsize)
-        # print(self.matrix)
-
-    def _generate_pheromones(self) -> None:
-        """Fills pheromone matrix with specific value."""
-        # Fill every cell with the same value.
-        for i in range(self.rank):
-            for j in range(self.rank):
-                self.pheromone_matrix[i][j] = 1 / (self.rank / 2) ** 2
-
-        # Apply the same pheromone to edge, not only arc.
-        for i in range(self.rank):
-            for j in range(self.rank):
-                self.pheromone_matrix[j][i] = self.pheromone_matrix[i][j]
-
-        # Set diagonal to -inf.
-        for i in range(self.rank):
-            self.pheromone_matrix[i][i] = -inf
 
     def generate_to_file(self) -> None:
         """Saves matrix to specific txt file."""
@@ -92,11 +66,11 @@ class Graph:
         self.rank = len(self.matrix)
 
     def show(self) -> None:
-        """Prints matrix and pheromones matrix."""
-        for line in self.matrix:
-            print(line)
-        for line in self.pheromone_matrix:
-            print(line)
+        """Prints matrix and pheromone matrix."""
+        np.set_printoptions(threshold=np.inf)
+        print(self.matrix)
+        print(self.pheromone_matrix)
+        np.set_printoptions()
 
     def _check_if_connected(self):
         """Checks if graph is connected Graph.
@@ -114,7 +88,7 @@ class Graph:
             for i in range(self.rank):
                 nodes = []
                 for j in range(self.rank):
-                    if self.matrix[i][j] != inf:
+                    if self.matrix[i, j] != inf:
                         if j not in nodes:
                             nodes.append(j)
                 graph[i] = nodes
