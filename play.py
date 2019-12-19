@@ -1,10 +1,8 @@
 #!/usr/bin/python3
-"""
-This is a simple implementation of Graphs in Python3.
+"""ACO optimization main file.
 
-Requirements:
-:version = python3.8
-:modules = random, math, numpy
+Requires:
+	modules: aco.py
 """
 
 __author__ = 'Milosz Chodkowski PUT'
@@ -17,7 +15,7 @@ from aco import ACO
 
 def main():
     print('Start optimization...')
-    aco = ACO(vertex=40, colony_size=9, iterations=70, a=2.3, b=1.7, pq=0.45, pi=190.0)
+    aco = ACO(vertex=40, colony_size=10, iterations=100, alpha=2.4, beta=1.7, pq=0.6, pi=193.7)
     best_c, best_s, time = aco.optimize()
 
     print('time:{}, cost:{}, solution:{}'.format(time, best_c, best_s))
