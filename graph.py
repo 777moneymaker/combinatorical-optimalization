@@ -5,7 +5,7 @@ Module contains methods for creation and handling Graph objects.
 
 Requires:
     version: python3.7
-    packages: random, math, numpy
+    packages: numpy
 
 TODO's:
     * Simplify code.

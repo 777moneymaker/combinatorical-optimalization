@@ -5,7 +5,7 @@ Contains methods for handling object of type(Graph) and type(Ant).
 
 Requires:
     version: python3.7
-    packages: random, math, numpy, typing, timeit
+    packages: numpy, matplotlib
 
 TODO's:
     * Test if while loop will work better than for loop (in 'optimize' method).
@@ -18,8 +18,10 @@ __status__ = 'Testing'
 
 import timeit
 import random as rnd
-
 import numpy as np
+
+from matplotlib.figure import Figure
+from matplotlib import pyplot
 
 from math import inf
 from numpy.random import choice as np_choice
@@ -76,6 +78,7 @@ class ACO:
         best_solution, best_cost = list(), inf
         gen_count, was_changed = 0, False
         elapsed_time, start = 0, timeit.default_timer()
+        costs, times = list(), list()
 
         # Until as many generations as need.
         while gen_count != self.iterations:
@@ -99,6 +102,10 @@ class ACO:
             gen_count += 1
             stop = timeit.default_timer()
             elapsed_time = stop - start
+
+            times.append(elapsed_time)
+            costs.append(best_cost)
+
             print('ended gen no {}, curr elapsed time: {}'.format(gen_count, elapsed_time))
 
             # If any ant got solution, then update all pheromones and each best applies pheromone.
@@ -113,7 +120,18 @@ class ACO:
                     str(v) for v in best_solution) + '\n')
                 o_file.close()
                 was_changed = False
-
+        pyplot.figure().tight_layout()
+        pyplot.xlabel('Time')
+        pyplot.ylabel('Costs')
+        pyplot.title('Cost value in time')
+        pyplot.plot(times, costs)
+        pyplot.figtext(
+            0, 0, '|V| = {}, |A| = {}, Iterations = {}, \u03B1 = {}, \u03B2 = {}, \u03C1, \u03BC = {}'.format(
+                self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
+                self.distance_impact, self.pheromone_vaporize_coefficient, self.pheromone_intensity),
+        )
+        pyplot.show()
+        pyplot.savefig('plot1.png')
         return best_cost, best_solution, elapsed_time
 
 
