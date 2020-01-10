@@ -8,8 +8,8 @@ Requires:
 
 __author__ = 'Milosz Chodkowski PUT'
 __license__ = 'MIT'
-__version__ = '0.9'
-__status__ = 'Testing'
+__version__ = '1.0'
+__status__ = 'Working'
 
 from aco import ACO
 
