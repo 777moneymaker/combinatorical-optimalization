@@ -5,7 +5,7 @@ Contains methods for handling object of type(Graph) and type(Ant).
 
 Requires:
     version: python3.7
-    packages: numpy, matplotlib
+    packages: numpy
 
 TODO's:
     * Test if while loop will work better than for loop (in 'optimize' method).
@@ -20,9 +20,6 @@ import timeit
 import random as rnd
 import numpy as np
 
-from matplotlib.figure import Figure
-from matplotlib import pyplot
-
 from math import inf
 from numpy.random import choice as np_choice
 from typing import Tuple
@@ -31,12 +28,14 @@ from graph import Graph
 
 
 class ACO:
-    def __init__(self, vertex: int, colony_size: int, iterations: int, alpha: float, beta: float, pq: float, pi: float):
+    def __init__(self, instance_file: str, test_file: str, vertex: int, colony_size: int, iterations: int, alpha: float, beta: float, pq: float, pi: float):
         """Constructor for ACO class.
 
         Creates ACO object containing Graph, Ants and methods handling optimization process.
 
         Args:
+            instance_file (str): File to load.
+            test_file (str) File to save results.
             vertex (int): Number of vertices.
             colony_size (int): Size of colony / number of ants.
             iterations (int): Number of iterations.
@@ -45,7 +44,8 @@ class ACO:
             pq (float): Pheromone vaporize coefficient.
             pi (float): Pheromone intensity.
         """
-        self.graph = Graph(vertex)
+        self.test_file = test_file
+        self.graph = Graph(instance_file, vertex)
         self.colony = colony_size
         self.iterations = iterations
         self.pheromone_impact = alpha
@@ -65,7 +65,7 @@ class ACO:
         for ant in ants:
             self.graph.pheromone_matrix = np.add(self.graph.pheromone_matrix, ant.left_pheromones)
         self.graph.pheromone_matrix *= (1 - self.pheromone_vaporize_coefficient)
-        
+
     def optimize(self) -> Tuple[float, list, float]:
         """Main method optimizing solution.
         
@@ -75,26 +75,30 @@ class ACO:
         Returns:
             Tuple(float, list, float): best cost, best solution, elapsed time in specific generation.
         """
+        o_file = open('Tests/' + self.test_file, 'a')
+        o_file.write("\nInstance's parameters : |V| {}, colony size {},"
+                     " iterations {}, alpha {}, beta {}, pq {}, pi {} \n".format(
+            self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
+            self.distance_impact, self.pheromone_vaporize_coefficient, self.pheromone_intensity
+        ))
+        o_file.close()
         best_solution, best_cost = list(), inf
         gen_count, was_changed = 0, False
         elapsed_time, start = 0, timeit.default_timer()
         costs, times = list(), list()
 
-        # Until as many generations as need.
+        # Until as many generations as needed.
         while gen_count != self.iterations:
-            # If past 30 minutes.
-            if elapsed_time > 60 * 30 :
+            if elapsed_time > 60 * 10:  # If past 30 minutes.
                 print('Time is over!')
                 return best_cost, best_solution, elapsed_time
 
             # Make a new list of ants and best_ants which found solution.
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
             for ant in ants:
-                # Travel until you find a solution.
-                while len(np.unique(ant.visited_vertices)) < self.graph.rank:
+                while len(np.unique(ant.visited_vertices)) < self.graph.rank:  # Until solution found.
                     ant.travel()
-                # If any of the ants found best solution - set it.
-                if ant.total_cost < best_cost:
+                if ant.total_cost < best_cost:  # Solution better
                     best_cost, best_solution = ant.total_cost, ant.visited_vertices
                     was_changed = True
                     # Add ant which found a solution to list of best_ants.
@@ -115,23 +119,15 @@ class ACO:
             # Print results to file.
             if was_changed:
                 print('Found Solution:\n cost: {}, path: {}\n'.format(best_cost, len(best_solution)))
-                o_file = open('TestsData/data5.txt', 'a')
+                o_file = open('Tests/' + self.test_file, 'a')
                 o_file.write('generation: ' + str(gen_count) + ' cost: ' + str(best_cost) + ' solution ' + ' '.join(
                     str(v) for v in best_solution) + '\n')
                 o_file.close()
                 was_changed = False
-        pyplot.figure().tight_layout()
-        pyplot.xlabel('Time')
-        pyplot.ylabel('Costs')
-        pyplot.title('Cost value in time')
-        pyplot.plot(times, costs)
-        pyplot.figtext(
-            0, 0, '|V| = {}, |A| = {}, Iterations = {}, \u03B1 = {}, \u03B2 = {}, \u03C1, \u03BC = {}'.format(
-                self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
-                self.distance_impact, self.pheromone_vaporize_coefficient, self.pheromone_intensity),
-        )
-        pyplot.show()
-        pyplot.savefig('plot1.png')
+
+        o_file = open('Tests/' + self.test_file, 'a')
+        o_file.write('Time {}'.format(elapsed_time))
+        o_file.close()
         return best_cost, best_solution, elapsed_time
 
 
@@ -183,12 +179,12 @@ class Ant:
                 self.total_cost += self.aco.graph.matrix[self.previous_vertex, self.current_vertex] * 10
 
         self.total_cost += self.aco.graph.matrix[self.current_vertex, next_vertex]
-        
+
         # On next move ant can't go to previous and current.
         if self.previous_vertex is not None:
             self.tabu_moves.append(self.previous_vertex)
         self.tabu_moves.append(self.current_vertex)
-        
+
         # Set a new current vertex, update previous.
         self.visited_vertices.append(next_vertex)
         self.previous_vertex = self.current_vertex
@@ -229,7 +225,7 @@ class Ant:
             (float): Probability of picking the j vertex as next.
         """
         current, denominator = self.current_vertex, 0.0
-        
+
         # Set the numerator and denominator for current iteration.
         numerator = (self.aco.graph.pheromone_matrix[current, j] ** self.aco.pheromone_impact) * \
                     ((1 / self.aco.graph.matrix[current, j]) ** self.aco.distance_impact)
@@ -245,6 +241,7 @@ class Ant:
         Method checks which edges are not visited.
         When no allowed - mark several visited as unvisited and generate again.
         """
+
         def generate(ant: Ant) -> list:
             """Nested method for generating initial lost of allowed moves.
             
@@ -265,7 +262,7 @@ class Ant:
             if prev_v in al_moves and len(al_moves) > 1:
                 al_moves.remove(prev_v)
             return al_moves
-        
+
         allowed = generate(self)
         # If not any legal move, then pop 1/4 of tabu moves and generate again.
         while not allowed:
@@ -290,7 +287,7 @@ class Ant:
             for x in range(1, len(self.visited_vertices)):
                 i, j = self.visited_vertices[x - 1], self.visited_vertices[x]
                 # Leave pheromones on edge i, j and j, i.
-                left_pheromones[i, j] = self.aco.pheromone_intensity / self.total_cost ** 2
-                left_pheromones[j, i] = self.aco.pheromone_intensity / self.total_cost ** 2
-        
+                left_pheromones[i, j] = (self.aco.pheromone_intensity / self.total_cost) ** 2
+                left_pheromones[j, i] = (self.aco.pheromone_intensity / self.total_cost) ** 2
+
         self.left_pheromones = left_pheromones

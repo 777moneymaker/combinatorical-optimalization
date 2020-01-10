@@ -23,17 +23,20 @@ from typing import List, Dict
 
 
 class Graph:
-    def __init__(self, rank: int = 10):
+    def __init__(self, instance_file: str, rank: int = 10):
         """Constructor for Graph class.
         
         Generates random matrix and pheromone_matrix based on number of vertices.
         
         Args:
+            instance_file (str): File to load instance.
             rank (int): Number of vertices.
         """
+        self.instance_file = instance_file
         self.rank = rank
         # Init with random values.
         self.matrix = np.random.uniform(1.0, 100.0, (self.rank, self.rank))
+        self.load()
         np.fill_diagonal(self.matrix, inf)
         # Set the same value in every cell.
         self.pheromone_matrix = np.full((self.rank, self.rank), 1 / (self.rank / 2) ** 2, dtype='float64')
@@ -58,11 +61,12 @@ class Graph:
 
     def generate_to_file(self):
         """Saves matrix to specific txt file."""
-        np.savetxt('TestsData/v40.txt', self.matrix, fmt='%f')
+        file = input("Give a file to save instance \"file.txt\"")
+        np.savetxt('Instances/' + file, self.matrix, fmt='%f')
 
     def load(self):
         """Loads matrix from specific txt file."""
-        self.matrix = np.loadtxt('TestsData/v40.txt', dtype=float)
+        self.matrix = np.loadtxt('Instances/' + self.instance_file, dtype=float)
         self.rank = len(self.matrix)
 
     def show(self):
@@ -108,5 +112,4 @@ class Graph:
         visited = list()
         dfs(visited, adj_list, 0)
         if len(visited) != self.rank:
-            raise ValueError('Graph not connected!');
-
+            raise ValueError('Graph not connected!')
