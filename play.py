@@ -18,11 +18,11 @@ from datetime import datetime
 from tkinter import messagebox
 from aco import ACO
 
-COLONY_SIZES = ['5', '10', '15', '25', '35']
 PARAMETERS = {
     'ALPHA': ['0.35', '0.4', '0.55', '0.6', '0.7'],
     'BETA': ['0.35', '0.4', '0.45', '0.55', '0.6'],
-    'INTENSITY': ['1.0', '2.0', '4.0', '10.0', '20.0']
+    'INTENSITY': ['1.0', '2.0', '4.0', '10.0', '20.0'],
+    'COLONY': ['5', '10', '15', '25', '35']
 }
 
 
@@ -35,14 +35,14 @@ def main():
     # test_file = input("Give a filename for tests \"file.txt\"")
     # instance_file = input("Give a file to load \"file.txt\"")
 
-    for fh in ['v50.txt']:
+    for fh in os.listdir('Instances_2'):
         for parameter in PARAMETERS:
             size = fh.split('.')[0].split('v')[1]
             times, costs = list(), list()
             values = PARAMETERS[parameter]
 
             for val in values:
-                full_name = 'test_{}_{}_{}.txt'.format(size, parameter, val)
+                full_name = 'test2_{}_{}_{}.txt'.format(size, parameter, val)
                 for i in range(5):  # For loop for tests.
                     print('Current file: {}, Current size: {}'.format(full_name, size))
                     print("Test no: {}".format(i+1))
@@ -51,7 +51,7 @@ def main():
                         test_file=full_name,
                         instance_file=fh,
                         vertex=40,
-                        colony_size=10,
+                        colony_size=int(val) if parameter == 'COLONY' else 10,
                         iterations=50,
                         alpha=float(val) if parameter == 'ALPHA' else 0.45,
                         beta=float(val) if parameter == 'BETA' else 0.55,
