@@ -16,6 +16,8 @@ __license__ = 'MIT'
 __version__ = '1.0'
 __status__ = 'Working'
 
+import os
+
 import random as rnd
 import numpy as np
 from math import inf
@@ -36,8 +38,12 @@ class Graph:
         self.rank = rank
         # Init with random values.
         self.matrix = np.random.uniform(1.0, 100.0, (self.rank, self.rank))
+
+        # self._remove_random_edges()
         self.load()
         np.fill_diagonal(self.matrix, inf)
+        # self.generate_to_file()
+
         # Set the same value in every cell.
         self.pheromone_matrix = np.full((self.rank, self.rank), 1 / (self.rank / 2) ** 2, dtype='float64')
         np.fill_diagonal(self.pheromone_matrix, -inf)
@@ -59,21 +65,19 @@ class Graph:
             self.matrix[x, y] = inf
             self.matrix[y, x] = inf
 
-    def generate_to_file(self):
+    def generate_to_file(self, file):
         """Saves matrix to specific txt file."""
-        file = input("Give a file to save instance \"file.txt\"")
-        np.savetxt('Instances/' + file, self.matrix, fmt='%f')
+        np.savetxt(os.path.join('Instances_2', file), self.matrix, fmt='%f')
 
     def load(self):
         """Loads matrix from specific txt file."""
-        self.matrix = np.loadtxt('Instances/' + self.instance_file, dtype=float)
+        self.matrix = np.loadtxt(os.path.join('Instances', self.instance_file), dtype=float)
         self.rank = len(self.matrix)
 
     def show(self):
         """Prints matrix and pheromone matrix."""
         np.set_printoptions(threshold=np.inf)
-        print(self.matrix)
-        print(self.pheromone_matrix)
+        print(self.matrix, self.pheromone_matrix)
         np.set_printoptions()
 
     def _check_if_connected(self):
@@ -108,6 +112,7 @@ class Graph:
                 for neighbour in graph[node]:
                     dfs(visited, graph, neighbour)
 
+        # _check_if_connected body.
         adj_list = matrix_to_list()
         visited = list()
         dfs(visited, adj_list, 0)

@@ -6,15 +6,14 @@ Contains methods for handling object of type(Graph) and type(Ant).
 Requires:
     version: python3.7
     packages: numpy
-
-TODO's:
-    * Test if while loop will work better than for loop (in 'optimize' method).
 """
 
 __author__ = 'Milosz Chodkowski PUT'
 __license__ = 'MIT'
 __version__ = '1.0'
 __status__ = 'Working'
+
+import os
 
 import timeit
 import random as rnd
@@ -28,7 +27,8 @@ from graph import Graph
 
 
 class ACO:
-    def __init__(self, instance_file: str, test_file: str, vertex: int, colony_size: int, iterations: int, alpha: float, beta: float, pq: float, pi: float):
+    def __init__(self, instance_file: str, test_file: str, vertex: int, colony_size: int, iterations: int, alpha: float,
+                 beta: float, pq: float, pi: float):
         """Constructor for ACO class.
 
         Creates ACO object containing Graph, Ants and methods handling optimization process.
@@ -52,7 +52,6 @@ class ACO:
         self.distance_impact = beta
         self.pheromone_vaporize_coefficient = pq
         self.pheromone_intensity = pi
-        self.first_iter = True
 
     def _update_pheromones(self, ants: list):
         """Method updating pheromones on visited edges.
@@ -75,13 +74,14 @@ class ACO:
         Returns:
             Tuple(float, list, float): best cost, best solution, elapsed time in specific generation.
         """
-        o_file = open('Tests/' + self.test_file, 'a')
-        o_file.write("\nInstance's parameters : |V| {}, colony size {},"
-                     " iterations {}, alpha {}, beta {}, pq {}, pi {} \n".format(
-            self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
-            self.distance_impact, self.pheromone_vaporize_coefficient, self.pheromone_intensity
-        ))
-        o_file.close()
+        with open(os.path.join('Tests', self.test_file), 'a') as o_file:
+            o_file.write("\nInstance parameters : |V| {}, colony size {},"
+                         " iterations {}, alpha {}, beta {}, "
+                         " pq {}, pi {} \n".format(
+                self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
+                self.distance_impact, self.pheromone_vaporize_coefficient, self.pheromone_intensity
+            ))
+
         best_solution, best_cost = list(), inf
         gen_count, was_changed = 0, False
         elapsed_time, start = 0, timeit.default_timer()
@@ -89,45 +89,54 @@ class ACO:
 
         # Until as many generations as needed.
         while gen_count != self.iterations:
-            if elapsed_time > 60 * 10:  # If past 30 minutes.
+            if elapsed_time > 60 * 45:  # If past 45 minutes.
                 print('Time is over!')
                 return best_cost, best_solution, elapsed_time
 
             # Make a new list of ants and best_ants which found solution.
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
             for ant in ants:
+                local_start = timeit.default_timer()
                 while len(np.unique(ant.visited_vertices)) < self.graph.rank:  # Until solution found.
+                    local_stop = timeit.default_timer()
+                    if local_stop - local_start > 10:  # If ant is travelling more than 10 seconds
+                        print('Ant was travelling too long. Breaking...')
+                        break
                     ant.travel()
+
                 if ant.total_cost < best_cost:  # Solution better
                     best_cost, best_solution = ant.total_cost, ant.visited_vertices
                     was_changed = True
                     # Add ant which found a solution to list of best_ants.
                     best_ants.append(ant)
+
             gen_count += 1
             stop = timeit.default_timer()
             elapsed_time = stop - start
 
             times.append(elapsed_time)
             costs.append(best_cost)
-
-            print('ended gen no {}, curr elapsed time: {}'.format(gen_count, elapsed_time))
+            print('End of gen no {}'.format(gen_count))
 
             # If any ant got solution, then update all pheromones and each best applies pheromone.
             for ant in best_ants:
                 ant._leave_pheromones()
             self._update_pheromones(best_ants)
-            # Print results to file.
-            if was_changed:
-                print('Found Solution:\n cost: {}, path: {}\n'.format(best_cost, len(best_solution)))
-                o_file = open('Tests/' + self.test_file, 'a')
-                o_file.write('generation: ' + str(gen_count) + ' cost: ' + str(best_cost) + ' solution ' + ' '.join(
-                    str(v) for v in best_solution) + '\n')
-                o_file.close()
+
+            if was_changed:     # Print results to file.
+                print('Solution!', 'cost: {:.2f}, path: {}'.format(best_cost, len(best_solution)), sep='\n')
+                with open(os.path.join('Tests', self.test_file), 'a') as o_file:
+                    o_file.write(
+                        'generation: ' + str(gen_count)
+                        + ' cost: ' + str(best_cost)
+                        + ' solution ' + ' '.join(
+                            str(v) for v in best_solution) + '\n'
+                        )
                 was_changed = False
 
-        o_file = open('Tests/' + self.test_file, 'a')
-        o_file.write('Time {}'.format(elapsed_time))
-        o_file.close()
+        with open(os.path.join('Tests', self.test_file), 'a') as o_file:
+            o_file.write('Time {:.2f}, Best cost: {:.2f}'.format(elapsed_time, best_cost))
+
         return best_cost, best_solution, elapsed_time
 
 
@@ -159,16 +168,12 @@ class Ant:
         Generates allowed moves and their probabilities. Makes choice.
         """
         # Generate valid vertices.
+
         self._generate_allowed_moves()
         probabilities = list(map(self._get_probability, self.allowed_moves))
         self._validate_probabilities(probabilities)
 
-        # If not first iteration, then choice is based on different probabilities.
-        if not self.aco.first_iter:
-            next_vertex = np_choice(self.allowed_moves, p=probabilities)
-        else:
-            next_vertex = rnd.choice(self.allowed_moves)
-            self.aco.first_iter = False
+        next_vertex = np_choice(self.allowed_moves, p=probabilities)
 
         '''Add next edge value to total cost. If previous value was bigger,
            then subtract the previous value, and add it 10 times bigger.'''
