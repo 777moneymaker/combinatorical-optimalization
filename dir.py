@@ -11,10 +11,12 @@ def main():
     sub_folders = {'INTENSITY', 'ALPHA', 'BETA', 'COLONY'}
     for size in sizes:
         for sub in sub_folders:
-            name = 'V{}'.format(str(size))
-            path = os.path.join('Tests', name)
-            sub_name = os.path.join(path, sub)
-            os.mkdir(sub_name)
+            for i in range(5):
+                name = 'V{}'.format(str(size))
+                path = os.path.join('Tests', name)
+                sub_name = os.path.join(path, sub)
+                test = 'TEST_{}'.format(str(i+1))
+                os.mkdir(os.path.join(sub_name, test))
 
 
 if __name__ == '__main__':

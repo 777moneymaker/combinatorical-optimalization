@@ -46,7 +46,7 @@ def main():
                 for i in range(5):  # For loop for tests.
                     print('Current file: {}, Current size: {}'.format(full_name, size))
                     print("Test no: {}".format(i+1))
-                    print(time_is())
+                    print('Time: {}'.format(time_is()))
                     aco = ACO(
                         test_file=full_name,
                         instance_file=fh,

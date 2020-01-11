@@ -71,7 +71,7 @@ class Graph:
 
     def load(self):
         """Loads matrix from specific txt file."""
-        self.matrix = np.loadtxt(os.path.join('Instances', self.instance_file), dtype=float)
+        self.matrix = np.loadtxt(os.path.join('Instances_2', self.instance_file), dtype=float)
         self.rank = len(self.matrix)
 
     def show(self):
