@@ -14,6 +14,7 @@ __version__ = '1.0'
 __status__ = 'Working'
 
 import os
+import sys
 import timeit
 import random as rnd
 import numpy as np
@@ -229,7 +230,7 @@ class Ant:
             probabilities (ndarray): list of probabilities to validate.
         """
         # Lowest value that python3 can handle
-        lowest = 2.2250738585072014e-308
+        lowest = sys.float_info.min
         if np.nan in probabilities:
             probabilities[probabilities == np.nan] = lowest     # Change Nan values to lowest
             probabilities *= 1.1 ** self.aco.graph.rank
