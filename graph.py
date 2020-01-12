@@ -51,8 +51,7 @@ class Graph:
         # Make rand edges an inf.
         for i in range(self.rank * 10):
             x, y = rnd.randint(0, self.rank - 1), rnd.randint(0, self.rank - 1)
-            self.matrix[x, y] = inf
-            self.matrix[y, x] = inf
+            self.matrix[(x, y), (y, x)] = inf
 
     def save(self, file):
         """Saves matrix to specific txt file."""

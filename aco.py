@@ -18,7 +18,8 @@ import timeit
 import random as rnd
 import numpy as np
 
-from math import inf, ceil
+from more_itertools import pairwise
+from math import inf
 from numpy.random import choice as np_choice
 from typing import Tuple
 
@@ -69,11 +70,11 @@ class ACO:
         self.graph.pheromone_matrix *= 1 - self.vaporize
 
     def smooth_pheromone(self, best_solution):
-        for x in range(1, len(best_solution)):
-            i, j = best_solution[x - 1], best_solution[x]
-            median = np.median(self.graph.pheromone_matrix)
-            self.graph.pheromone_matrix[i, j] = median  # Reduction of pheromones
-            self.graph.pheromone_matrix[j, i] = median
+        median = np.median(self.graph.pheromone_matrix)
+        for pair in pairwise(best_solution):
+            i, j = pair[0], best_solution[1]
+            self.graph.pheromone_matrix[(i, j), (j, i)] = median  # Reduction of pheromones
+            # self.graph.pheromone_matrix[j, i] = median
 
     def optimize(self) -> Tuple[float, list, float]:
         """Main method optimizing solution.
@@ -82,7 +83,7 @@ class ACO:
         Ants which found solution are added to list of best ants.
 
         Returns:
-            Tuple(float, list, float): best cost, best solution, elapsed time in specific generation.
+            Tuple(float, list, float): best cost, best solution, elapsed time.
         """
         with open(os.path.join('Tests', self.test_file), 'a') as o_file:
             o_file.write("\nInstance parameters : |V| {}, colony size {},"
@@ -194,7 +195,7 @@ class Ant:
         """
         # Generate valid vertices.
         self.generate_allowed_moves()
-        probabilities = list(map(self.get_probability, self.allowed_moves))
+        probabilities = np.array(list(map(self.get_probability, self.allowed_moves)), dtype='float64')
         self.validate_probabilities(probabilities)
 
         next_vertex = np_choice(self.allowed_moves, p=probabilities)
@@ -219,30 +220,21 @@ class Ant:
         self.previous_vertex = self.current_vertex
         self.current_vertex = next_vertex
 
-    def validate_probabilities(self, probabilities: list):
+    def validate_probabilities(self, probabilities):
         """Checks if probabilities sum to one.
 
         If not, then make it sum to one.
 
         Args:
-            probabilities (list): list of probabilities to validate.
+            probabilities (ndarray): list of probabilities to validate.
         """
         # Lowest value that python3 can handle
         lowest = 2.2250738585072014e-308
-        nan_found = False
-        for i in range(len(probabilities)):
-            # If value is NaN, then make it the lowest value.
-            if np.isnan(probabilities[i]):
-                probabilities[i] = lowest
-                nan_found = True
-            # Make every probability proportionally bigger.
-            if nan_found:
-                probabilities[i] *= 1.1 ** self.aco.graph.rank
-        total = sum(probabilities)
-
-        # To make probabilities sum to 1, divide every probability by their sum.
-        for i in range(len(probabilities)):
-            probabilities[i] /= total
+        if np.nan in probabilities:
+            probabilities[probabilities == np.nan] = lowest     # Change Nan values to lowest
+            probabilities *= 1.1 ** self.aco.graph.rank
+        if sum(probabilities) != 1:
+            probabilities /= sum(probabilities)     # Make it sum to 1.
 
     def get_probability(self, j: int) -> float:
         """Get probability for edge (current, param).
@@ -309,14 +301,14 @@ class Ant:
 
         Traverse through whole solution (path) and applies pheromone on every edge.
         """
-        rank = self.aco.graph.rank
         # Make left pheromones on all edges equal to zero.
-        left_pheromones = np.zeros((rank, rank))
-        if len(self.visited_vertices) > 1:
-            for x in range(1, len(self.visited_vertices)):
-                i, j = self.visited_vertices[x - 1], self.visited_vertices[x]
-                # Leave pheromones on edge i, j and j, i.
-                left_pheromones[i, j] = (self.aco.intensity / self.total_cost) ** 2
-                left_pheromones[j, i] = (self.aco.intensity / self.total_cost) ** 2
+        if len(self.visited_vertices) <= 1:
+            return None
 
+        left_pheromones = np.zeros_like(self.left_pheromones)
+        for pair in pairwise(self.visited_vertices):
+            i, j = pair[0], pair[1]
+            # Leave pheromones on edge i, j and j, i.
+            left_pheromones[(i, j), (j, i)] = (self.aco.intensity / self.total_cost) ** 2
+            # left_pheromones[j, i] = (self.aco.intensity / self.total_cost) ** 2
         self.left_pheromones = left_pheromones
