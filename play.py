@@ -35,14 +35,14 @@ def main():
     # test_file = input("Give a filename for tests \"file.txt\"")
     # instance_file = input("Give a file to load \"file.txt\"")
 
-    for fh in os.listdir('Instances_2'):
+    for fh in os.listdir('Instances_3'):
         for parameter in PARAMETERS:
             size = fh.split('.')[0].split('v')[1]
             times, costs = list(), list()
             values = PARAMETERS[parameter]
 
             for val in values:
-                full_name = 'test2_{}_{}_{}.txt'.format(size, parameter, val)
+                full_name = 'test_{}_{}_{}.txt'.format(size, parameter, val)
                 for i in range(5):  # For loop for tests.
                     print('Current file: {}, Current size: {}'.format(full_name, size))
                     print("Test no: {}".format(i+1))
@@ -56,7 +56,10 @@ def main():
                         alpha=float(val) if parameter == 'ALPHA' else 0.45,
                         beta=float(val) if parameter == 'BETA' else 0.55,
                         pq=0.5,
-                        pi=float(val) if parameter == 'INTENSITY' else 1.0)
+                        pi=float(val) if parameter == 'INTENSITY' else 1.0,
+                        break_count=3,
+                        change_count=6
+                    )
                     best_c, best_s, time = aco.optimize()
                     times.append(time)
                     costs.append(best_c)

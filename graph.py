@@ -6,9 +6,6 @@ Module contains methods for creation and handling Graph objects.
 Requires:
     version: python3.7
     packages: numpy
-
-TODO's:
-    * Simplify code.
 """
 
 __author__ = 'Milosz Chodkowski PUT'
@@ -17,15 +14,15 @@ __version__ = '1.0'
 __status__ = 'Working'
 
 import os
-
 import random as rnd
 import numpy as np
+
 from math import inf
 from typing import List, Dict
 
 
 class Graph:
-    def __init__(self, instance_file: str, rank: int = 10):
+    def __init__(self, instance_file: str = None, rank: int = 10):
         """Constructor for Graph class.
         
         Generates random matrix and pheromone_matrix based on number of vertices.
@@ -36,22 +33,14 @@ class Graph:
         """
         self.instance_file = instance_file
         self.rank = rank
-        # Init with random values.
-        self.matrix = np.random.uniform(1.0, 100.0, (self.rank, self.rank))
-
-        # self._remove_random_edges()
+        self.matrix = np.random.uniform(1.0, 100.0, (self.rank, self.rank))     # Init with random values.
         self.load()
-        np.fill_diagonal(self.matrix, inf)
-        # self.generate_to_file()
-
         # Set the same value in every cell.
         self.pheromone_matrix = np.full((self.rank, self.rank), 1 / (self.rank / 2) ** 2, dtype='float64')
         np.fill_diagonal(self.pheromone_matrix, -inf)
+        self.check_if_connected()
 
-        self._remove_random_edges()
-        self._check_if_connected()
-
-    def _remove_random_edges(self):
+    def remove_random_edges(self):
         """Sets random correspoding cells to inf.
         
         Sets [i, j] and [j, i] to inf.
@@ -65,22 +54,25 @@ class Graph:
             self.matrix[x, y] = inf
             self.matrix[y, x] = inf
 
-    def generate_to_file(self, file):
+    def save(self, file):
         """Saves matrix to specific txt file."""
-        np.savetxt(os.path.join('Instances_2', file), self.matrix, fmt='%f')
+        if not file:
+            np.savetxt(os.path.join('Saved', file), self.matrix, fmt='%f')
+        else:
+            np.savetxt(os.path.join('Saved', input("Give a filename: ")), self.matrix, fmt='%f')
 
     def load(self):
         """Loads matrix from specific txt file."""
-        self.matrix = np.loadtxt(os.path.join('Instances_2', self.instance_file), dtype=float)
+        self.matrix = np.loadtxt(os.path.join('Instances_3', self.instance_file), dtype=float)
         self.rank = len(self.matrix)
 
     def show(self):
         """Prints matrix and pheromone matrix."""
-        np.set_printoptions(threshold=np.inf)
-        print(self.matrix, self.pheromone_matrix)
-        np.set_printoptions()
+        # np.set_printoptions(threshold=np.inf)
+        print(self.matrix, self.pheromone_matrix, sep='\n\n')
+        # np.set_printoptions()
 
-    def _check_if_connected(self):
+    def check_if_connected(self):
         """Checks if graph is connected Graph.
 
         Makes a DFS traverse. If len DFS == rank then graph is connected.
@@ -112,7 +104,7 @@ class Graph:
                 for neighbour in graph[node]:
                     dfs(visited, graph, neighbour)
 
-        # _check_if_connected body.
+        # check_if_connected body.
         adj_list = matrix_to_list()
         visited = list()
         dfs(visited, adj_list, 0)
