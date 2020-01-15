@@ -35,7 +35,7 @@ def main():
     # test_file = input("Give a filename for tests \"file.txt\"")
     # instance_file = input("Give a file to load \"file.txt\"")
 
-    for fh in os.listdir('Instances_3'):
+    for fh in ['v40_4.txt', 'v45_4.txt', 'v55_4.txt', 'v60_4.txt', 'v65_4.txt']:
         for parameter in PARAMETERS:
             size = fh.split('.')[0].split('v')[1]
             times, costs = list(), list()
@@ -58,19 +58,20 @@ def main():
                         pq=0.5,
                         pi=float(val) if parameter == 'INTENSITY' else 1.0,
                         break_count=3,
-                        change_count=6
+                        change_count=6,
+                        smooth_count=2
                     )
                     best_c, best_s, time = aco.optimize()
                     times.append(time)
                     costs.append(best_c)
                     print('time: {:.2f}, cost: {:.2f}, solution (len): {}'.format(time, best_c, len(best_s)))
 
-    messagebox.showinfo(
-        'Data',
-        'Avg Time {:.2f}\nAvg Cost {:.2f}\nBest cost {}'.format(
-            sum(times) / len(times), sum(costs) / len(costs), min(costs)
-        )
-    )
+    # messagebox.showinfo(
+    #     'Data',
+    #     'Avg Time {:.2f}\nAvg Cost {:.2f}\nBest cost {}'.format(
+    #         sum(times) / len(times), sum(costs) / len(costs), min(costs)
+    #     )
+    # )
 
 
 if __name__ == "__main__":

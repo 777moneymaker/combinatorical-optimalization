@@ -49,9 +49,9 @@ class Graph:
             Diagonal is inf.
         """
         # Make rand edges an inf.
-        for i in range(self.rank * 10):
-            x, y = rnd.randint(0, self.rank - 1), rnd.randint(0, self.rank - 1)
-            self.matrix[(x, y), (y, x)] = inf
+        for x in range(self.rank * 10):
+            i, j = rnd.randint(0, self.rank - 1), rnd.randint(0, self.rank - 1)
+            self.matrix[(i, j), (j, i)] = inf
 
     def save(self, file):
         """Saves matrix to specific txt file."""
@@ -62,14 +62,20 @@ class Graph:
 
     def load(self):
         """Loads matrix from specific txt file."""
-        self.matrix = np.loadtxt(os.path.join('Instances_3', self.instance_file), dtype=float)
+        self.matrix = np.loadtxt(os.path.join('Instances_4', self.instance_file), dtype=float)
         self.rank = len(self.matrix)
 
-    def show(self):
-        """Prints matrix and pheromone matrix."""
-        # np.set_printoptions(threshold=np.inf)
-        print(self.matrix, self.pheromone_matrix, sep='\n\n')
-        # np.set_printoptions()
+    def show_distances(self):
+        """Prints distance matrix."""
+        np.set_printoptions(threshold=np.inf)
+        print(self.matrix)
+        np.set_printoptions()
+
+    def show_pheromones(self):
+        """Prints pheromone matrix"""
+        np.set_printoptions(threshold=np.inf)
+        print(self.pheromone_matrix)
+        np.set_printoptions()
 
     def check_if_connected(self):
         """Checks if graph is connected Graph.
@@ -86,14 +92,18 @@ class Graph:
             Returns:
                 AdjList: List of successors for each vertex.
             """
-            graph = dict()
-            for i in range(self.rank):
-                nodes = list()
-                for j in range(self.rank):
-                    if self.matrix[i, j] != inf:
-                        if j not in nodes:
-                            nodes.append(j)
-                graph[i] = nodes
+            graph = {
+                node: [
+                    neighbour for neighbour in range(self.rank) if self.matrix[node, neighbour] != inf
+                ] for node in range(self.rank)
+            }
+            # for i in range(self.rank):
+            #     nodes = list()
+            #     for j in range(self.rank):
+            #         if self.matrix[i, j] != inf:
+            #             if j not in nodes:
+            #                 nodes.append(j)
+            #     graph[i] = nodes
             return graph
 
         def dfs(visited: list, graph: AdjList, node: int):

@@ -29,7 +29,7 @@ from graph import Graph
 
 class ACO:
     def __init__(self, instance_file: str, test_file: str, vertex: int, colony_size: int, iterations: int, alpha: float,
-                 beta: float, pq: float, pi: float, break_count: int, change_count: int):
+                 beta: float, pq: float, pi: float, break_count: int, change_count: int, smooth_count: int):
         """Constructor for ACO class.
 
         Creates ACO object containing Graph, Ants and methods handling optimization process.
@@ -46,6 +46,7 @@ class ACO:
             pi (float): Pheromone intensity.
             break_count (int): Breaks allowed before pheromone smoothing.
             change_count (int): No-solution-change iterations allowed before pheromone smoothing
+            smooth_count (int): How many times pheromone can be smoothed
         """
         self.test_file = test_file
         self.graph = Graph(instance_file, vertex)
@@ -57,6 +58,7 @@ class ACO:
         self.intensity = pi
         self.break_count = break_count
         self.change_count = change_count
+        self.smooth_count = smooth_count
 
     def update_pheromones(self, ants: list):
         """Method updating pheromones on visited edges.
@@ -74,7 +76,7 @@ class ACO:
         median = np.median(self.graph.pheromone_matrix)
         for pair in pairwise(best_solution):
             i, j = pair[0], best_solution[1]
-            self.graph.pheromone_matrix[(i, j), (j, i)] = median  # Reduction of pheromones
+            self.graph.pheromone_matrix[(i, j), (j, i)] /= median * 0.33  # Reduction of pheromones
             # self.graph.pheromone_matrix[j, i] = median
 
     def optimize(self) -> Tuple[float, list, float]:
@@ -107,42 +109,41 @@ class ACO:
                 return best_cost, best_solution, elapsed_time
 
             # If there is no change in solution and any new solutions exist
-            if no_change_count >= self.change_count and solutions:
-                for sol in solutions:
-                    self.smooth_pheromone(sol)
-                print('Matrix was smoothed')
-                solutions.clear()
-                no_change_count = 0
+            # if no_change_count >= self.change_count and solutions:
+            #     # for sol in sorted(solutions, key=lambda x: x[1]):
+            #     #     self.smooth_pheromone(sol[0])
+            #     self.graph.smooth()
+            #     print('Matrix was smoothed')
+            #     solutions.clear()
+            #     no_change_count = 0
 
             # Make a list of best_ants which found solution.
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
             break_counter = 0
             for ant in ants:
-                # Set pheromone matrix to median value, if ants breaking too much
-                if break_counter > self.break_count and best_solution is not None:
-                    self.smooth_pheromone(best_solution)
-                    break_counter = 0
-
                 local_start = timeit.default_timer()
                 while len(np.unique(ant.visited_vertices)) < self.graph.rank:  # Until solution found.
                     ant.travel()
                     local_stop = timeit.default_timer()
-
                     if local_stop - local_start > 3:  # If ant is travelling more than 10 seconds
                         print('Ant was travelling too long. Breaking...')
                         break_counter += 1
                         break
 
-                if ant.total_cost < best_cost:  # Solution better
+                if ant.total_cost < best_cost:  # Solution is better
                     best_cost, best_solution = ant.total_cost, ant.visited_vertices
                     was_changed = True
                     best_ants.append(ant)   # Add ant which found a solution to list of best_ants.
-                    solutions.append(best_solution)
+                    solutions.append((best_solution, best_cost))
+
+                # Set pheromone matrix to median value, if ants breaking too much
+                if break_counter >= self.break_count and len(best_solution) > 1:
+                    self.smooth_pheromone(best_solution)
+                    break_counter = 0
 
             stop = timeit.default_timer()
             elapsed_time = stop - start
             gen_count += 1
-
             print('End of gen no {}'.format(gen_count))
 
             # If any ant got solution, then update pheromones
@@ -231,8 +232,8 @@ class Ant:
         """
         # Lowest value that python3 can handle
         lowest = sys.float_info.min
-        if np.nan in probabilities:
-            probabilities[probabilities == np.nan] = lowest     # Change Nan values to lowest
+        if np.isnan(np.min(probabilities)):
+            probabilities[probabilities == min(probabilities)] = lowest   # Change Nan values to lowest
             probabilities *= 1.1 ** self.aco.graph.rank
         if sum(probabilities) != 1:
             probabilities /= sum(probabilities)     # Make it sum to 1.
