@@ -5,7 +5,8 @@ Contains methods for handling object of type(Graph) and type(Ant).
 
 Requires:
     version: python3.7
-    packages: numpy
+    packages: numpy, more_itertools, typing
+    modules: graph
 """
 
 __author__ = 'Milosz Chodkowski PUT'
@@ -28,15 +29,14 @@ from graph import Graph
 
 
 class ACO:
-    def __init__(self, instance_file: str, test_file: str, vertex: int, colony_size: int, iterations: int, alpha: float,
-                 beta: float, pq: float, pi: float, break_count: int, change_count: int, smooth_count: int):
+    def __init__(self, instance_file: str, vertex: int, colony_size: int, iterations: int, alpha: float,
+                 beta: float, pq: float, pi: float, break_count: int, change_count: int):
         """Constructor for ACO class.
 
         Creates ACO object containing Graph, Ants and methods handling optimization process.
 
         Args:
             instance_file (str): File to load.
-            test_file (str) File to save results.
             vertex (int): Number of vertices.
             colony_size (int): Size of colony / number of ants.
             iterations (int): Number of iterations.
@@ -46,9 +46,7 @@ class ACO:
             pi (float): Pheromone intensity.
             break_count (int): Breaks allowed before pheromone smoothing.
             change_count (int): No-solution-change iterations allowed before pheromone smoothing
-            smooth_count (int): How many times pheromone can be smoothed
         """
-        self.test_file = test_file
         self.graph = Graph(instance_file, vertex)
         self.colony = colony_size
         self.iterations = iterations
@@ -58,7 +56,6 @@ class ACO:
         self.intensity = pi
         self.break_count = break_count
         self.change_count = change_count
-        self.smooth_count = smooth_count
 
     def update_pheromones(self, ants: list):
         """Method updating pheromones on visited edges.
@@ -72,13 +69,6 @@ class ACO:
             self.graph.pheromone_matrix += ant.left_pheromones
         self.graph.pheromone_matrix *= 1 - self.vaporize
 
-    def smooth_pheromone(self, best_solution):
-        median = np.median(self.graph.pheromone_matrix)
-        for pair in pairwise(best_solution):
-            i, j = pair[0], best_solution[1]
-            self.graph.pheromone_matrix[(i, j), (j, i)] /= median * 0.33  # Reduction of pheromones
-            # self.graph.pheromone_matrix[j, i] = median
-
     def optimize(self) -> Tuple[float, list, float]:
         """Main method optimizing solution.
         
@@ -88,13 +78,12 @@ class ACO:
         Returns:
             Tuple(float, list, float): best cost, best solution, elapsed time.
         """
-        with open(os.path.join('Tests', self.test_file), 'a') as o_file:
-            o_file.write("\nInstance parameters : |V| {}, colony size {},"
-                         " iterations {}, alpha {}, beta {}, "
-                         " pq {}, pi {} \n".format(
-                self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
-                self.distance_impact, self.vaporize, self.intensity
-            ))
+        # with open(os.path.join('Tests', self.test_file), 'a') as o_file:
+        #     sentence = """\nInstance parameters : |V| {}, colony size {}, iterations {}, alpha {}, beta {},pq {}, pi {}\n""".format(
+        #             self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
+        #             self.distance_impact, self.vaporize, self.intensity
+        #         )
+        #     o_file.write(sentence)
 
         best_solution, best_cost = None, inf
         solutions = list()
@@ -108,14 +97,11 @@ class ACO:
                 print('Time is over!')
                 return best_cost, best_solution, elapsed_time
 
-            # If there is no change in solution and any new solutions exist
-            # if no_change_count >= self.change_count and solutions:
-            #     # for sol in sorted(solutions, key=lambda x: x[1]):
-            #     #     self.smooth_pheromone(sol[0])
-            #     self.graph.smooth()
-            #     print('Matrix was smoothed')
-            #     solutions.clear()
-            #     no_change_count = 0
+            if no_change_count > self.change_count:
+                print("Matrix was smoothed.\nMax before smooth: {}".format(np.max(self.graph.pheromone_matrix)))
+                self.graph.smooth(best_solution)
+                no_change_count = 0
+                print("Max after smooth: {}".format(np.max(self.graph.pheromone_matrix)))
 
             # Make a list of best_ants which found solution.
             ants, best_ants = [Ant(self) for a in range(self.colony)], list()
@@ -136,11 +122,6 @@ class ACO:
                     best_ants.append(ant)   # Add ant which found a solution to list of best_ants.
                     solutions.append((best_solution, best_cost))
 
-                # Set pheromone matrix to median value, if ants breaking too much
-                if break_counter >= self.break_count and len(best_solution) > 1:
-                    self.smooth_pheromone(best_solution)
-                    break_counter = 0
-
             stop = timeit.default_timer()
             elapsed_time = stop - start
             gen_count += 1
@@ -153,17 +134,17 @@ class ACO:
 
             if was_changed:     # Print results to file.
                 print('Solution!', 'cost: {:.2f}, path: {}'.format(best_cost, len(best_solution)), sep='\n')
-                with open(os.path.join('Tests', self.test_file), 'a') as o_file:
-                    o_file.write('generation: {} cost: {}, solution {}\n'.format(
-                        str(gen_count), str(best_cost), ' '.join(str(v) for v in best_solution))
-                    )
+                # with open(os.path.join('Tests', self.test_file), 'a') as o_file:
+                #     o_file.write('generation: {} cost: {}, solution {}\n'.format(
+                #         str(gen_count), str(best_cost), ' '.join(str(v) for v in best_solution))
+                #     )
                 was_changed = False
                 no_change_count = 0
             else:
                 no_change_count += 1
 
-        with open(os.path.join('Tests', self.test_file), 'a') as o_file:
-            o_file.write('Time {:.2f}, Best cost: {:.2f}'.format(elapsed_time, best_cost))
+        # with open(os.path.join('Tests', self.test_file), 'a') as o_file:
+        #     o_file.write('Time {:.2f}, Best cost: {:.2f}'.format(elapsed_time, best_cost))
 
         return best_cost, best_solution, elapsed_time
 
@@ -199,7 +180,6 @@ class Ant:
         self.generate_allowed_moves()
         probabilities = np.array(list(map(self.get_probability, self.allowed_moves)), dtype='float64')
         self.validate_probabilities(probabilities)
-
         next_vertex = np_choice(self.allowed_moves, p=probabilities)
 
         '''Add next edge value to total cost. If previous value was bigger,
@@ -312,5 +292,4 @@ class Ant:
             i, j = pair[0], pair[1]
             # Leave pheromones on edge i, j and j, i.
             left_pheromones[(i, j), (j, i)] = (self.aco.intensity / self.total_cost) ** 2
-            # left_pheromones[j, i] = (self.aco.intensity / self.total_cost) ** 2
         self.left_pheromones = left_pheromones
