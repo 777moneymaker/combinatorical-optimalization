@@ -10,7 +10,7 @@ from itertools import product
 
 def main():
     sizes = {40, 45, 50, 55, 60, 65, 70}
-    sub_folders = {'INTENSITY', 'ALPHA', 'BETA', 'COLONY'}
+    sub_folders = {'HIGH_WEIGHTS', 'LOW_WEIGHTS'}
     for folder in product(sizes, sub_folders):
         for i in range(5):
             name = 'V{}'.format(str(folder[0]))

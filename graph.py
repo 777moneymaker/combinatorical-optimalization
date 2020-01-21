@@ -42,15 +42,11 @@ class Graph:
         self.pheromone_matrix = np.full((self.rank, self.rank), 1 / (self.rank / 2) ** 2, dtype='float64')
         np.fill_diagonal(self.pheromone_matrix, -inf)
 
-    def smooth(self, solution):
-        """Smooths the pheromone matrix.
-
-        Note:
-            Takes edges from solution list. Uses a sqrt function.
-        """
-        minimal = np.min(self.pheromone_matrix[self.pheromone_matrix > -inf])
-        for i, j in pairwise(solution):
-            self.pheromone_matrix[(i, j), (j, i)] = minimal * np.sqrt(self.pheromone_matrix[i, j]/minimal)
+    def smooth(self):
+        """Smooths the pheromone matrix."""
+        minimal = np.median(self.pheromone_matrix[self.pheromone_matrix > -inf])
+        maxim = np.max(self.pheromone_matrix)
+        self.pheromone_matrix[self.pheromone_matrix == maxim] = minimal * np.log(maxim/minimal)
 
     def remove_random_edges(self):
         """Sets random corresponding cells to inf.

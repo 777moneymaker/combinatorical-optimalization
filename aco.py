@@ -99,8 +99,8 @@ class ACO:
 
             if no_change_count > self.change_count:
                 print("Matrix was smoothed.\nMax before smooth: {}".format(np.max(self.graph.pheromone_matrix)))
-                self.graph.smooth(best_solution)
-                no_change_count = 0
+                self.graph.smooth()
+                no_change_count = -100
                 print("Max after smooth: {}".format(np.max(self.graph.pheromone_matrix)))
 
             # Make a list of best_ants which found solution.
@@ -139,7 +139,7 @@ class ACO:
                 #         str(gen_count), str(best_cost), ' '.join(str(v) for v in best_solution))
                 #     )
                 was_changed = False
-                no_change_count = 0
+                #no_change_count = 0
             else:
                 no_change_count += 1
 
