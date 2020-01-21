@@ -37,12 +37,12 @@ def get_args():
     parser.add_argument(
         '-a', '-A', '--alpha',
         dest='alpha',
-        default=0.45,
+        default=1.0,
         help='alpha val')
     parser.add_argument(
         '-b', '-B', '--beta',
         dest='beta',
-        default=0.55,
+        default=4.5,
         help='beta val')
     parser.add_argument(
         '-v', '-V', '--vaporize',
@@ -86,6 +86,15 @@ def main(fh_input: str, colony: int, iters: int, alpha: float, beta: float, vapo
 
 
 if __name__ == "__main__":
-
     args = get_args()
-    main(args.fh_input, int(args.colony), int(args.iterations), float(args.alpha), float(args.beta), float(args.vaporize), float(args.intensity), int(args.br_count), int(args.ch_count))
+    main(
+        args.fh_input,
+        int(args.colony),
+        int(args.iterations),
+        float(args.alpha),
+        float(args.beta),
+        float(args.vaporize),
+        float(args.intensity),
+        int(args.br_count),
+        int(args.ch_count)
+    )

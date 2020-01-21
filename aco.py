@@ -78,13 +78,6 @@ class ACO:
         Returns:
             Tuple(float, list, float): best cost, best solution, elapsed time.
         """
-        # with open(os.path.join('Tests', self.test_file), 'a') as o_file:
-        #     sentence = """\nInstance parameters : |V| {}, colony size {}, iterations {}, alpha {}, beta {},pq {}, pi {}\n""".format(
-        #             self.graph.rank, self.colony, self.iterations, self.pheromone_impact,
-        #             self.distance_impact, self.vaporize, self.intensity
-        #         )
-        #     o_file.write(sentence)
-
         best_solution, best_cost = None, inf
         solutions = list()
         no_change_count, gen_count = 0, 0
@@ -134,12 +127,8 @@ class ACO:
 
             if was_changed:     # Print results to file.
                 print('Solution!', 'cost: {:.2f}, path: {}'.format(best_cost, len(best_solution)), sep='\n')
-                # with open(os.path.join('Tests', self.test_file), 'a') as o_file:
-                #     o_file.write('generation: {} cost: {}, solution {}\n'.format(
-                #         str(gen_count), str(best_cost), ' '.join(str(v) for v in best_solution))
-                #     )
                 was_changed = False
-                #no_change_count = 0
+                no_change_count = 0
             else:
                 no_change_count += 1
 
