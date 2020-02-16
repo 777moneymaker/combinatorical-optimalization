@@ -11,16 +11,15 @@ Technical things
 -----
 Requires:
 * numpy
-* matplotlib
 
 Usage
 -----
 ```
-python3 play.py 
+python3 play.py [-args]
 # or 	
 sudo chmod +x play.py  
 # then
-./play.py  
+./play.py [-args]
 ```
 
 Authors
