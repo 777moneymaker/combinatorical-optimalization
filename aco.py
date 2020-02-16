@@ -5,7 +5,7 @@ Contains methods for handling object of type(Graph) and type(Ant).
 
 Requires:
     version: python3.7
-    packages: numpy, more_itertools, typing
+    packages: numpy, more_itertools
     modules: graph
 """
 
@@ -23,7 +23,6 @@ import numpy as np
 from more_itertools import pairwise
 from math import inf
 from numpy.random import choice as np_choice
-from typing import Tuple
 
 from graph import Graph
 
@@ -69,7 +68,7 @@ class ACO:
             self.graph.pheromone_matrix += ant.left_pheromones
         self.graph.pheromone_matrix *= 1 - self.vaporize
 
-    def optimize(self) -> Tuple[float, list, float]:
+    def optimize(self):
         """Main method optimizing solution.
         
         Every ant travel through graph and compute solution.
@@ -79,7 +78,7 @@ class ACO:
             Tuple(float, list, float): best cost, best solution, elapsed time.
         """
         best_solution, best_cost = None, inf
-        solutions = list()
+        solutions = []
         no_change_count, gen_count = 0, 0
         was_changed = False
         elapsed_time, start = 0, timeit.default_timer()
@@ -91,13 +90,12 @@ class ACO:
                 return best_cost, best_solution, elapsed_time
 
             if no_change_count > self.change_count:
-                print("Matrix was smoothed.\nMax before smooth: {}".format(np.max(self.graph.pheromone_matrix)))
+                print(f"Matrix was smoothed.\nMax before smooth: {np.max(self.graph.pheromone_matrix)}")
                 self.graph.smooth()
                 no_change_count = -100
-                print("Max after smooth: {}".format(np.max(self.graph.pheromone_matrix)))
 
             # Make a list of best_ants which found solution.
-            ants, best_ants = [Ant(self) for a in range(self.colony)], list()
+            ants, best_ants = [Ant(self) for a in range(self.colony)], []
             break_counter = 0
             for ant in ants:
                 local_start = timeit.default_timer()
@@ -118,7 +116,7 @@ class ACO:
             stop = timeit.default_timer()
             elapsed_time = stop - start
             gen_count += 1
-            print('End of gen no {}'.format(gen_count))
+            print(f'End of gen no {gen_count}')
 
             # If any ant got solution, then update pheromones
             for ant in best_ants:
@@ -126,14 +124,11 @@ class ACO:
             self.update_pheromones(best_ants)
 
             if was_changed:     # Print results to file.
-                print('Solution!', 'cost: {:.2f}, path: {}'.format(best_cost, len(best_solution)), sep='\n')
+                print(f'Solution!\n cost: {best_cost:.2f}, path: {best_solution}')
                 was_changed = False
                 no_change_count = 0
             else:
                 no_change_count += 1
-
-        # with open(os.path.join('Tests', self.test_file), 'a') as o_file:
-        #     o_file.write('Time {:.2f}, Best cost: {:.2f}'.format(elapsed_time, best_cost))
 
         return best_cost, best_solution, elapsed_time
 
@@ -154,8 +149,8 @@ class Ant:
         self.previous_vertex = None
         self.current_vertex = self.start
 
-        self.allowed_moves = list()
-        self.tabu_moves = list()
+        self.allowed_moves = []
+        self.tabu_moves = []
 
         self.left_pheromones = np.zeros((self.aco.graph.rank, self.aco.graph.rank))
         self.visited_vertices = [self.start]
@@ -207,7 +202,7 @@ class Ant:
         if sum(probabilities) != 1:
             probabilities /= sum(probabilities)     # Make it sum to 1.
 
-    def get_probability(self, j: int) -> float:
+    def get_probability(self, j: int):
         """Get probability for edge (current, param).
 
         Args:
@@ -234,7 +229,7 @@ class Ant:
         When no allowed - mark several visited as unvisited and generate again.
         """
 
-        def generate(ant: Ant) -> list:
+        def generate(ant: Ant):
             """Nested method for generating initial lost of allowed moves.
             
             Args:

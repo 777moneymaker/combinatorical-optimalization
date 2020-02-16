@@ -5,7 +5,7 @@ Module contains methods for creation and handling Graph objects.
 
 Requires:
     version: python3.7
-    packages: numpy, more_itertools, typing
+    packages: numpy, more_itertools
 """
 
 __author__ = 'Milosz Chodkowski PUT'
@@ -16,10 +16,9 @@ __status__ = 'Working'
 import os
 import random as rnd
 import numpy as np
-from more_itertools import pairwise
 
+from more_itertools import pairwise
 from math import inf
-from typing import List, Dict
 
 
 class Graph:
@@ -90,8 +89,7 @@ class Graph:
         Raises:
                 ValueError: If Graph is not connected.
         """
-        AdjList = Dict[int, List[int]]
-        def matrix_to_list() -> AdjList:
+        def matrix_to_list():
             """Creates a adjacency list from matrix.
 
             Returns:
@@ -117,9 +115,3 @@ class Graph:
         dfs(visited, adj_list, 0)
         if len(visited) != self.rank:
             raise ValueError('Graph not connected!')
-
-
-if __name__ == '__main__':
-    sizes = [40, 45, 50, 55, 60, 65, 70]
-    for size in sizes:
-        pass
