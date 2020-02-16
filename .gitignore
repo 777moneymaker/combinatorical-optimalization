@@ -1,3 +1,15 @@
+# Instance files
+Instances/
+Instances_2/
+Instances_3/
+Instances_4/
+Instances_5/
+Instances_HighLow/
+Instances_Matrix_Smooth/
+Instances_Penalty/
+
+# Test results
+Tests/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

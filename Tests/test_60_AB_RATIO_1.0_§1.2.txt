@@ -1,3 +1,0 @@
-
-Instance parameters : |V| 60, colony size 10, iterations 50, alpha 1.0, beta 1.2,  pq 0.5, pi 1.0 
-generation: 1 cost: 8763.745872, solution 22 10 44 46 19 29 39 53 58 57 28 11 3 50 7 34 23 43 56 41 36 27 49 38 13 0 54 2 51 12 59 6 1 8 37 14 30 48 21 25 42 45 55 15 35 5 9 52 31 18 40 26 4 32 33 16 17 20 47 24
